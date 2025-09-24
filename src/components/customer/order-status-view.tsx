@@ -59,28 +59,26 @@ export function OrderStatusView({
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // When the initial order prop changes, update our internal state
     setOrder(initialOrder);
   }, [initialOrder]);
 
   useEffect(() => {
     if (order.status === "closed") {
-      onPlaceNewOrder();
+      // The order is fully complete, we don't need to poll anymore.
       return;
     }
-
-    // Don't poll if the order is already in a final user-facing state
-    if (["served", "billed", "closed"].includes(order.status)) {
-      return;
-    }
-
+    
     const fetchStatus = async () => {
       setIsLoading(true);
       try {
         const response = await fetch(`/api/orders/${order.id}`);
         if (response.ok) {
-          const data = await response.json();
+          const data: Order = await response.json();
           setOrder(data);
+          // If the order is now closed from the backend, trigger the reset.
+          if (data.status === 'closed') {
+             onPlaceNewOrder();
+          }
         }
       } catch (error) {
         console.error("Failed to fetch order status:", error);
@@ -91,10 +89,11 @@ export function OrderStatusView({
 
     const interval = setInterval(fetchStatus, 5000); // Poll every 5 seconds
     return () => clearInterval(interval);
-  }, [order.id, order.status, onPlaceNewOrder]);
+  }, [order.id, onPlaceNewOrder, order.status]);
 
   const currentStatus = statusInfo[order.status];
   const StatusIcon = currentStatus.icon;
+  const isOrderFinalized = order.status === 'billed' || order.status === 'closed';
 
   return (
     <Card className="shadow-lg">
@@ -136,13 +135,22 @@ export function OrderStatusView({
             <span>Total</span>
             <span>₹{order.total.toFixed(2)}</span>
         </div>
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={onAddMoreItems}
-        >
-          Place Another Order
-        </Button>
+        {isOrderFinalized ? (
+            <Button
+            className="w-full"
+            onClick={onPlaceNewOrder}
+            >
+            Start New Order
+            </Button>
+        ) : (
+            <Button
+            variant="outline"
+            className="w-full"
+            onClick={onAddMoreItems}
+            >
+            Add More Items
+            </Button>
+        )}
       </CardFooter>
     </Card>
   );

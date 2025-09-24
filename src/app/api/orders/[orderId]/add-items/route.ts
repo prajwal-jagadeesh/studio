@@ -23,6 +23,11 @@ export async function POST(
     }
 
     const existingOrder = orders[orderIndex];
+    
+    // Guardrail: Prevent adding items to a finalized order
+    if (existingOrder.status === 'billed' || existingOrder.status === 'closed') {
+        return NextResponse.json({ message: `Cannot add items to a ${existingOrder.status} order.` }, { status: 403 });
+    }
 
     // Add or merge new items
     itemsToAdd.forEach(newItem => {

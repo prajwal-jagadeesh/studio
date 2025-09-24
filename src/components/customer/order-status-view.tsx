@@ -60,13 +60,8 @@ export function OrderStatusView({
   }, [initialOrder]);
 
   useEffect(() => {
-    // If the order is finalized, no need to poll.
-    // If it's closed, trigger the reset.
     if (order.status === 'closed') {
         onPlaceNewOrder();
-        return;
-    }
-    if (order.status === 'billed') {
         return;
     }
     

@@ -185,14 +185,17 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
                        {order.status === 'pending' && (
                         <DropdownMenuItem onClick={() => handleStatusChange(order.id, "confirmed")}>Confirm Order</DropdownMenuItem>
                        )}
-                       {order.status === 'ready' && (
+                        {order.status === 'ready' && (
                         <DropdownMenuItem onClick={() => handleStatusChange(order.id, "served")}>Mark as Served</DropdownMenuItem>
                        )}
                        {order.status === 'served' && (
                         <DropdownMenuItem onClick={() => handleStatusChange(order.id, "billed")}>Mark as Billed</DropdownMenuItem>
                        )}
                        {order.status === 'billed' && (
-                        <DropdownMenuItem onClick={() => handleStatusChange(order.id, "closed")}>Close Order</DropdownMenuItem>
+                        <>
+                          <DropdownMenuItem disabled>Payment Received</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleStatusChange(order.id, "closed")}>Close Order</DropdownMenuItem>
+                        </>
                        )}
                     </DropdownMenuContent>
                   </DropdownMenu>

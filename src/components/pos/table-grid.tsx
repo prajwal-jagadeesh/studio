@@ -9,13 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 import { Button } from "../ui/button";
 import { KOTPreview } from "./kot-preview";
 import { BillPreview } from "./bill-preview";
@@ -80,24 +73,6 @@ export function TableGrid() {
     const interval = setInterval(fetchData, 5000); // Poll for updates every 5 seconds
     return () => clearInterval(interval);
   }, [toast]);
-
-  const handleTableStatusChange = async (tableId: string, status: Table["status"]) => {
-    try {
-      const response = await fetch(`/api/tables/${tableId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-      });
-      if (!response.ok) throw new Error('Failed to update status');
-      await fetchData(); // Refetch data to ensure consistency
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Update Failed",
-        description: "Could not update table status.",
-      });
-    }
-  };
 
   const handleOrderStatusChange = async (orderId: string, status: Order["status"]) => {
     try {
@@ -181,66 +156,39 @@ export function TableGrid() {
                 <p className={`uppercase font-bold text-sm ${statusStyles[table.status].textColor}`}>
                   {table.status}
                 </p>
-                {table.status !== "available" && table.currentOrderId && (
+                {currentOrder && (
                   <div>
                       <p className="text-xs text-muted-foreground mt-1">
-                      Order: {table.currentOrderId}
+                      Order: {currentOrder.id}
                       </p>
                       <p className="text-xs text-muted-foreground capitalize">
-                      Status: {currentOrder?.status}
+                      Status: {currentOrder.status}
                       </p>
                   </div>
                 )}
               </CardContent>
               <CardFooter className="flex flex-col items-stretch gap-2">
-                {table.currentOrderId && (table.status === 'occupied' || table.status === 'billing') && (
+                {currentOrder && (
                   <>
                     <Button
                       variant="outline"
                       size="sm"
                       className="w-full"
-                      onClick={() => handlePrint(table.currentOrderId!, "kot")}
+                      onClick={() => handlePrint(currentOrder.id, "kot")}
+                      disabled={currentOrder.status !== 'confirmed'}
                     >
                       Print KOT
                     </Button>
-                    <Button size="sm" className="w-full" onClick={() => handlePrint(table.currentOrderId!, "bill")}>
+                    <Button 
+                      size="sm" 
+                      className="w-full" 
+                      onClick={() => handlePrint(currentOrder.id, "bill")}
+                      disabled={currentOrder.status !== 'served' && currentOrder.status !== 'billed'}
+                      >
                       Print Bill
                     </Button>
                   </>
                 )}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="w-full">
-                      Change Status
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem
-                      onClick={() => handleTableStatusChange(table.id, "available")}
-                    >
-                      Available
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => handleTableStatusChange(table.id, "occupied")}
-                      disabled
-                    >
-                      Occupied
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => handleTableStatusChange(table.id, "billing")}
-                    >
-                      Billing
-                    </DropdownMenuItem>
-                    {currentOrder && currentOrder.status === 'preparing' && (
-                       <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleOrderStatusChange(currentOrder.id, 'ready')}>
-                            Mark as Ready
-                        </DropdownMenuItem>
-                       </>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </CardFooter>
             </Card>
           )

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { Order, MenuItem } from "@/lib/data";
+import type { Order, MenuItem, Table } from "@/lib/data";
 import {
   Table,
   TableBody,
@@ -15,6 +15,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
   Dialog,
@@ -90,11 +91,39 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
       setOrders(prevOrders =>
         prevOrders.map(o => (o.id === updatedOrder.id ? updatedOrder : o))
       );
+
+       // If an order is billed, update the table status to 'billing'
+       if (status === 'billed') {
+        await updateTableStatus(updatedOrder.tableId, 'billing');
+      }
+
+      // If an order is closed, update the table status to 'available'
+      if (status === 'closed') {
+        await updateTableStatus(updatedOrder.tableId, 'available');
+      }
+
     } catch (error) {
        toast({
         variant: "destructive",
         title: "Update Failed",
         description: "Could not update order status.",
+      });
+    }
+  };
+
+  const updateTableStatus = async (tableId: string, status: Table["status"]) => {
+    try {
+      const response = await fetch(`/api/tables/${tableId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      if (!response.ok) throw new Error('Failed to update table status');
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Table Update Failed",
+        description: "Could not update the table status.",
       });
     }
   };
@@ -104,7 +133,7 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
     setIsDialogOpen(true);
   }
 
-  const sortedOrders = [...orders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const sortedOrders = [...orders].filter(o => o.status !== 'closed').sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   if (isLoading) {
     return (
@@ -151,9 +180,22 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => openOrderDetails(order)}>View Details</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleStatusChange(order.id, "preparing")}>Mark as Preparing</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleStatusChange(order.id, "ready")}>Mark as Ready</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleStatusChange(order.id, "served")}>Mark as Served</DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                       {order.status === 'pending' && (
+                        <DropdownMenuItem onClick={() => handleStatusChange(order.id, "preparing")}>Mark as Preparing</DropdownMenuItem>
+                       )}
+                       {order.status === 'preparing' && (
+                        <DropdownMenuItem onClick={() => handleStatusChange(order.id, "ready")}>Mark as Ready</DropdownMenuItem>
+                       )}
+                       {order.status === 'ready' && (
+                        <DropdownMenuItem onClick={() => handleStatusChange(order.id, "served")}>Mark as Served</DropdownMenuItem>
+                       )}
+                       {order.status === 'served' && (
+                        <DropdownMenuItem onClick={() => handleStatusChange(order.id, "billed")}>Mark as Billed</DropdownMenuItem>
+                       )}
+                       {order.status === 'billed' && (
+                        <DropdownMenuItem onClick={() => handleStatusChange(order.id, "closed")}>Close Order</DropdownMenuItem>
+                       )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

@@ -1,3 +1,58 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "paneer_tikka",
+      "description": "Grilled Paneer Tikka dish.",
+      "imageUrl": "https://images.unsplash.com/photo-1701579231378-3726490a407b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwYW5lZXIlMjB0aWtrYXxlbnwwfHx8fDE3NTg2MDk3NTh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "paneer tikka"
+    },
+    {
+      "id": "veg_kebab",
+      "description": "Grilled vegetable kebabs.",
+      "imageUrl": "https://images.unsplash.com/photo-1740591872073-e0e627756b90?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHx2ZWclMjBrZWJhYnxlbnwwfHx8fDE3NTg3MDc0Njl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "veg kebab"
+    },
+    {
+      "id": "shahi_paneer",
+      "description": "Rich and creamy Shahi Paneer.",
+      "imageUrl": "https://images.unsplash.com/photo-1703144407913-4eee60a89b00?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxzaGFoaSUyMHBhbmVlcnxlbnwwfHx8fDE3NTg3MDc0Njl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "shahi paneer"
+    },
+    {
+      "id": "dal_makhani",
+      "description": "Creamy dal makhani.",
+      "imageUrl": "https://images.unsplash.com/photo-1595243463493-55235da19aec?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxkYWwlMjBtYWtoYW5pfGVufDB8fHx8MTc1ODcwNzQ2OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "dal makhani"
+    },
+    {
+      "id": "veg_biryani",
+      "description": "Aromatic vegetable biryani.",
+      "imageUrl": "https://images.unsplash.com/photo-1570565188831-d90ae8b75341?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx2ZWclMjBiaXJ5YW5pfGVufDB8fHx8MTc1ODcwNzQ2OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "veg biryani"
+    },
+    {
+      "id": "naan",
+      "description": "Soft butter naan bread.",
+      "imageUrl": "https://images.unsplash.com/photo-1697155406014-04dc649b0953?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxuYWFuJTIwYnJlYWR8ZW58MHx8fHwxNzU4NjA5NzU4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "naan bread"
+    },
+    {
+      "id": "gulab_jamun",
+      "description": "Sweet gulab jamun dessert.",
+      "imageUrl": "https://images.unsplash.com/photo-1593701461250-d7b22dfd3a77?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxndWxhYiUyMGphbXVufGVufDB8fHx8MTc1ODYxMDUyMnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "gulab jamun"
+    },
+    {
+      "id": "ras_malai",
+      "description": "Delicious ras malai dessert.",
+      "imageUrl": "https://images.unsplash.com/photo-1749003659356-1d1a4451a49d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxyYXMlMjBtYWxhaXxlbnwwfHx8fDE3NTg3MDc0Njl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "ras malai"
+    },
+    {
+      "id": "lime_soda",
+      "description": "Refreshing lime soda.",
+      "imageUrl": "https://images.unsplash.com/photo-1716925539259-ce0115263d37?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxsaW1lJTIwc29kYXxlbnwwfHx8fDE3NTg3MDc0Njl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "lime soda"
+    }
+  ]
 }

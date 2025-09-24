@@ -1,6 +1,7 @@
+
 "use client";
 
-import type { OrderItem, Table } from "@/lib/data";
+import type { OrderItem, Table, Order } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -39,6 +40,7 @@ interface OrderSummaryProps {
   tables: Table[];
   onUpdateQuantity: (menuId: string, quantity: number) => void;
   onClearOrder: () => void;
+  onOrderPlaced: (order: Order) => void;
 }
 
 export function OrderSummary({
@@ -46,11 +48,13 @@ export function OrderSummary({
   tables,
   onUpdateQuantity,
   onClearOrder,
+  onOrderPlaced,
 }: OrderSummaryProps) {
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [placedOrderDetails, setPlacedOrderDetails] = useState<Order | null>(null);
   const { toast } = useToast();
 
   const total = items.reduce((sum, item) => sum + item.price * item.qty, 0);
@@ -91,10 +95,12 @@ export function OrderSummary({
       if (!response.ok) {
         throw new Error("Failed to place order");
       }
-
+      
+      const newOrder = await response.json();
+      setPlacedOrderDetails(newOrder);
       setIsSuccessOpen(true);
-      onClearOrder();
-      setSelectedTableId(null);
+      // We no longer clear the order here; we lift the state up.
+
     } catch (error) {
       console.error("Order placement failed:", error);
       toast({
@@ -107,6 +113,14 @@ export function OrderSummary({
       setIsLoading(false);
     }
   };
+
+  const handleSuccessDialogClose = () => {
+    setIsSuccessOpen(false);
+    if(placedOrderDetails) {
+      onOrderPlaced(placedOrderDetails);
+    }
+    setSelectedTableId(null);
+  }
 
   return (
     <>
@@ -238,12 +252,12 @@ export function OrderSummary({
             <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
             <AlertDialogTitle>Order Placed Successfully!</AlertDialogTitle>
             <AlertDialogDescription>
-              Your order has been sent to the kitchen.
+              Your order has been sent to the kitchen. You can now track its status.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setIsSuccessOpen(false)}>
-              Done
+            <AlertDialogAction onClick={handleSuccessDialogClose}>
+              Track Order
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

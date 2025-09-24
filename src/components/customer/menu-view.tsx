@@ -1,10 +1,13 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
-import type { MenuItem, OrderItem, Table } from "@/lib/data";
+import type { MenuItem, OrderItem, Table, Order } from "@/lib/data";
 import { MenuTabs } from "./menu-tabs";
 import { OrderSummary } from "./order-summary";
 import { getTables } from "@/services/get-tables";
+import { OrderStatusView } from "./order-status-view";
+
 
 interface MenuViewProps {
   menuItems: MenuItem[];
@@ -13,6 +16,7 @@ interface MenuViewProps {
 export function MenuView({ menuItems }: MenuViewProps) {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
+  const [placedOrder, setPlacedOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     async function fetchTables() {
@@ -55,6 +59,15 @@ export function MenuView({ menuItems }: MenuViewProps) {
     setOrderItems([]);
   };
 
+  const handleOrderPlaced = (order: Order) => {
+    setPlacedOrder(order);
+    setOrderItems([]); // Clear the cart for the next order
+  };
+
+  const handlePlaceNewOrder = () => {
+    setPlacedOrder(null);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <header className="text-center mb-8">
@@ -68,12 +81,17 @@ export function MenuView({ menuItems }: MenuViewProps) {
           <MenuTabs menuItems={menuItems} onAddToOrder={addToOrder} />
         </div>
         <div className="lg:col-span-1 sticky top-8">
-          <OrderSummary
-            items={orderItems}
-            tables={tables}
-            onUpdateQuantity={updateQuantity}
-            onClearOrder={clearOrder}
-          />
+          {placedOrder ? (
+            <OrderStatusView order={placedOrder} onPlaceNewOrder={handlePlaceNewOrder} />
+          ) : (
+            <OrderSummary
+              items={orderItems}
+              tables={tables}
+              onUpdateQuantity={updateQuantity}
+              onClearOrder={clearOrder}
+              onOrderPlaced={handleOrderPlaced}
+            />
+          )}
         </div>
       </div>
     </div>

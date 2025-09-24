@@ -1,0 +1,34 @@
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .printable-content, .printable-content * {
+    visibility: visible;
+  }
+  
+  .print-only, .print-only * {
+    visibility: visible;
+  }
+
+  .printable-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  .non-printable {
+    display: none !important;
+  }
+}
+
+.print-only {
+    display: none;
+}
+
+@media print {
+    .print-only {
+        display: block;
+    }
+}

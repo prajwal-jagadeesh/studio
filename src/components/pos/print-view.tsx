@@ -53,14 +53,6 @@ export function PrintView({ orders }: PrintViewProps) {
     setDialogType(null);
   }
 
-  const triggerPrint = () => {
-    if (dialogType === 'KOT') {
-      handlePrintKOT();
-    } else if (dialogType === 'Bill') {
-      handlePrintBill();
-    }
-  }
-
   return (
     <>
       <div className="border rounded-lg">
@@ -103,12 +95,16 @@ export function PrintView({ orders }: PrintViewProps) {
             </DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            {selectedOrder && dialogType === "KOT" && <KOTPreview order={selectedOrder} ref={kotPrintRef} />}
-            {selectedOrder && dialogType === "Bill" && <BillPreview order={selectedOrder} ref={billPrintRef} />}
+            <div style={{ display: "none" }}>
+              {selectedOrder && <KOTPreview order={selectedOrder} ref={kotPrintRef} />}
+              {selectedOrder && <BillPreview order={selectedOrder} ref={billPrintRef} />}
+            </div>
+            {selectedOrder && dialogType === "KOT" && <KOTPreview order={selectedOrder} />}
+            {selectedOrder && dialogType === "Bill" && <BillPreview order={selectedOrder} />}
           </div>
           <DialogFooter>
              <Button variant="outline" onClick={closeDialog}>Cancel</Button>
-            <Button onClick={triggerPrint}>
+            <Button onClick={dialogType === 'KOT' ? handlePrintKOT : handlePrintBill}>
               <Printer className="mr-2 h-4 w-4" />
               Print
             </Button>

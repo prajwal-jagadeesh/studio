@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ClipboardList, LayoutGrid, Utensils } from "lucide-react";
+import { ClipboardList, Utensils } from "lucide-react";
 import {
   Sidebar,
   SidebarProvider,
@@ -15,7 +15,6 @@ import {
   SidebarTrigger,
   SidebarInset,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 export default function CaptainLayout({
@@ -50,18 +49,6 @@ export default function CaptainLayout({
                 <Link href="/captain">
                   <ClipboardList />
                   <span>Live Orders</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={isActive("/captain/tables")}
-                tooltip="Table Management"
-              >
-                <Link href="/captain/tables">
-                  <LayoutGrid />
-                  <span>Table Management</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

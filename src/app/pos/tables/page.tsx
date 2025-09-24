@@ -1,5 +1,5 @@
-import { tables } from "@/lib/data";
-import { TableGrid } from "@/components/captain/table-grid";
+import { tables, orders } from "@/lib/data";
+import { TableGrid } from "@/components/pos/table-grid";
 
 export default function TableManagementPage() {
   return (
@@ -9,10 +9,10 @@ export default function TableManagementPage() {
           Table Management
         </h1>
         <p className="text-muted-foreground mt-1">
-          View the status of all tables at a glance.
+          View table status and print KOTs or bills.
         </p>
       </header>
-      <TableGrid initialTables={tables} />
+      <TableGrid initialTables={tables} initialOrders={orders} />
     </div>
   );
 }

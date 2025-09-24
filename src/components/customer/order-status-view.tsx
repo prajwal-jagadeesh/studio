@@ -57,7 +57,12 @@ export function OrderStatusView({
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Don't poll if the order is already in a final state
+    if (order.status === "closed") {
+      onPlaceNewOrder();
+      return;
+    }
+
+    // Don't poll if the order is already in a final user-facing state
     if (["served", "billed", "closed"].includes(order.status)) {
       return;
     }
@@ -79,7 +84,7 @@ export function OrderStatusView({
 
     const interval = setInterval(fetchStatus, 5000); // Poll every 5 seconds
     return () => clearInterval(interval);
-  }, [order.id, order.status]);
+  }, [order.id, order.status, onPlaceNewOrder]);
 
   const currentStatus = statusInfo[order.status];
   const StatusIcon = currentStatus.icon;

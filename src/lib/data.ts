@@ -46,18 +46,7 @@ const findImage = (id: string) => {
     return { imageUrl: image.imageUrl, imageHint: image.imageHint };
 }
 
-export const menuItems: MenuItem[] = [
-  { id: "1", name: "Paneer Tikka", description: "Grilled cottage cheese cubes marinated in spices.", price: 250, category: "Starters", ...findImage('paneer_tikka') },
-  { id: "2", name: "Veg Seekh Kebab", description: "Minced vegetables grilled on a skewer.", price: 220, category: "Starters", ...findImage('veg_kebab') },
-  { id: "3", name: "Shahi Paneer", description: "Cottage cheese in a rich, creamy tomato gravy.", price: 350, category: "Main Course", ...findImage('shahi_paneer') },
-  { id: "4", name: "Dal Makhani", description: "Black lentils simmered in a creamy buttery gravy.", price: 300, category: "Main Course", ...findImage('dal_makhani') },
-  { id: "5", name: "Veg Biryani", description: "Aromatic rice dish with mixed vegetables.", price: 280, category: "Main Course", ...findImage('veg_biryani') },
-  { id: "6", name: "Butter Naan", description: "Soft Indian bread with butter.", price: 60, category: "Breads", ...findImage('naan') },
-  { id: "7", name: "Garlic Naan", description: "Soft Indian bread with garlic and herbs.", price: 70, category: "Breads", ...findImage('naan') },
-  { id: "8", name: "Gulab Jamun", description: "Soft, spongy balls soaked in sugar syrup.", price: 120, category: "Desserts", ...findImage('gulab_jamun') },
-  { id: "9", name: "Ras Malai", description: "Cheese dumplings in sweetened, thickened milk.", price: 150, category: "Desserts", ...findImage('ras_malai') },
-  { id: "10", name: "Fresh Lime Soda", description: "Refreshing sweet and salty lime drink.", price: 90, category: "Beverages", ...findImage('lime_soda') },
-];
+export const menuItems: MenuItem[] = [];
 
 export const tables: Table[] = [
   { id: "T1", name: "Table 1", status: "occupied", currentOrderId: "O1" },

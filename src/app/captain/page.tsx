@@ -1,7 +1,9 @@
 import { LiveOrdersView } from "@/components/captain/live-orders-view";
-import { orders, menuItems } from "@/lib/data";
+import { orders } from "@/lib/data";
+import { getMenuItems } from "@/services/get-menu";
 
-export default function CaptainDashboardPage() {
+export default async function CaptainDashboardPage() {
+  const menuItems = await getMenuItems();
   return (
     <div>
       <header className="mb-6">

@@ -1,8 +1,9 @@
 import { LocationVerifier } from "@/components/customer/location-verifier";
 import { MenuView } from "@/components/customer/menu-view";
-import { menuItems } from "@/lib/data";
+import { getMenuItems } from "@/services/get-menu";
 
-export default function MenuPage() {
+export default async function MenuPage() {
+  const menuItems = await getMenuItems();
   return (
     <>
       <LocationVerifier />

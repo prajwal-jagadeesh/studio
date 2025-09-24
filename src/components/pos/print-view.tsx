@@ -35,7 +35,7 @@ function PrintRow({ order }: { order: Order }) {
 
   return (
     <>
-      {/* Hidden components for printing */}
+      {/* Hidden components for printing are now at the root of PrintView */}
       <div style={{ display: "none" }}>
         <KOTPreview order={order} ref={kotPrintRef} />
         <BillPreview order={order} ref={billPrintRef} />
@@ -50,12 +50,12 @@ function PrintRow({ order }: { order: Order }) {
           </Badge>
         </TableCell>
         <TableCell className="text-right space-x-2">
-          <Button variant="outline" size="sm" onClick={handlePrintKOT}>
-            Print KOT
-          </Button>
-          <Button size="sm" onClick={handlePrintBill}>
-            Print Bill
-          </Button>
+            <Button variant="outline" size="sm" onClick={handlePrintKOT}>
+              Print KOT
+            </Button>
+            <Button size="sm" onClick={handlePrintBill}>
+              Print Bill
+            </Button>
         </TableCell>
       </TableRow>
     </>

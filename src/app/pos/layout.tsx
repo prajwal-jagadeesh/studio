@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart, Utensils, LayoutGrid } from "lucide-react";
+import { BarChart, Utensils, LayoutGrid, BookMarked } from "lucide-react";
 import {
   Sidebar,
   SidebarProvider,
@@ -49,6 +49,18 @@ export default function PosLayout({
                 <Link href="/pos/tables">
                   <LayoutGrid />
                   <span>Table Management</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={isActive("/pos/menu")}
+                tooltip="Menu Management"
+              >
+                <Link href="/pos/menu">
+                  <BookMarked />
+                  <span>Menu Management</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

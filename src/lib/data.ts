@@ -130,48 +130,15 @@ export const menuItems: MenuItem[] = [
   ];
 
 export const tables: Table[] = [
-  { id: "T1", name: "Table 1", status: "occupied", currentOrderId: "O1" },
+  { id: "T1", name: "Table 1", status: "available", currentOrderId: null },
   { id: "T2", name: "Table 2", status: "available", currentOrderId: null },
-  { id: "T3", name: "Table 3", status: "occupied", currentOrderId: "O2" },
-  { id: "T4", name: "Table 4", status: "billing", currentOrderId: "O3" },
+  { id: "T3", name: "Table 3", status: "available", currentOrderId: null },
+  { id: "T4", name: "Table 4", status: "available", currentOrderId: null },
   { id: "T5", name: "Table 5", status: "available", currentOrderId: null },
   { id: "T6", name: "Table 6", status: "available", currentOrderId: null },
 ];
 
-export const orders: Order[] = [
-  {
-    id: "O1", tableId: "T1", tableName: "Table 1",
-    items: [
-        { menuId: "1", name: "Paneer Tikka", qty: 1, price: 250 },
-        { menuId: "6", name: "Butter Naan", qty: 2, price: 60 },
-    ],
-    total: 370, status: "pending", createdAt: new Date(Date.now() - 5 * 60 * 1000)
-  },
-  {
-    id: "O2", tableId: "T3", tableName: "Table 3",
-    items: [
-        { menuId: "3", name: "Shahi Paneer", qty: 1, price: 350 },
-        { menuId: "4", name: "Dal Makhani", qty: 1, price: 300 },
-        { menuId: "7", name: "Garlic Naan", qty: 4, price: 70 },
-    ],
-    total: 930, status: "preparing", createdAt: new Date(Date.now() - 15 * 60 * 1000)
-  },
-  {
-    id: "O3", tableId: "T4", tableName: "Table 4",
-    items: [
-        { menuId: "5", name: "Veg Biryani", qty: 2, price: 280 },
-        { menuId: "10", name: "Fresh Lime Soda", qty: 2, price: 90 },
-    ],
-    total: 740, status: "served", createdAt: new Date(Date.now() - 25 * 60 * 1000)
-  },
-  {
-    id: "O4", tableId: "T4", tableName: "Table 4",
-    items: [
-        { menuId: "8", name: "Gulab Jamun", qty: 2, price: 120 },
-    ],
-    total: 240, status: "billed", createdAt: new Date(Date.now() - 2 * 60 * 1000)
-  },
-];
+export const orders: Order[] = [];
 
 export const analyticsData: AnalyticsData[] = [
     { date: "2023-10-01", totalOrders: 15, revenue: 12500 },

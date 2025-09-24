@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { Table, Order } from "@/lib/data";
 import {
   Card,
@@ -18,11 +18,8 @@ import {
 import { Button } from "../ui/button";
 import { KOTPreview } from "./kot-preview";
 import { BillPreview } from "./bill-preview";
-
-interface TableGridProps {
-  initialTables: Table[];
-  initialOrders: Order[];
-}
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 const statusStyles = {
   available: {
@@ -42,24 +39,68 @@ const statusStyles = {
   },
 };
 
-export function TableGrid({ initialTables, initialOrders }: TableGridProps) {
-  const [tables, setTables] = useState<Table[]>(initialTables);
+export function TableGrid() {
+  const [tables, setTables] = useState<Table[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [orderToPrint, setOrderToPrint] = useState<Order | null>(null);
   const [printType, setPrintType] = useState<"kot" | "bill" | null>(null);
+  const { toast } = useToast();
 
   const kotPrintRef = useRef<HTMLDivElement>(null);
   const billPrintRef = useRef<HTMLDivElement>(null);
 
-  const handleStatusChange = (tableId: string, status: Table["status"]) => {
-    setTables((prevTables) =>
-      prevTables.map((table) =>
-        table.id === tableId ? { ...table, status } : table
-      )
-    );
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [tablesRes, ordersRes] = await Promise.all([
+          fetch('/api/tables'),
+          fetch('/api/orders')
+        ]);
+        if (!tablesRes.ok || !ordersRes.ok) {
+          throw new Error('Failed to fetch data');
+        }
+        const tablesData = await tablesRes.json();
+        const ordersData = await ordersRes.json();
+        setTables(tablesData);
+        setOrders(ordersData);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Could not fetch table or order data.",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 5000); // Poll for updates every 5 seconds
+    return () => clearInterval(interval);
+  }, [toast]);
+
+  const handleStatusChange = async (tableId: string, status: Table["status"]) => {
+    try {
+      const response = await fetch(`/api/tables/${tableId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      if (!response.ok) throw new Error('Failed to update status');
+      const updatedTable = await response.json();
+      setTables((prev) => prev.map(t => t.id === tableId ? updatedTable : t));
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Update Failed",
+        description: "Could not update table status.",
+      });
+    }
   };
   
   const handlePrint = (orderId: string, type: "kot" | "bill") => {
-    const order = initialOrders.find(o => o.id === orderId);
+    const order = orders.find(o => o.id === orderId);
     if (!order) return;
     
     setOrderToPrint(order);
@@ -71,6 +112,14 @@ export function TableGrid({ initialTables, initialOrders }: TableGridProps) {
       setPrintType(null);
     }, 50);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <>

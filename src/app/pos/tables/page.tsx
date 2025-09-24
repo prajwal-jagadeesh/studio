@@ -1,4 +1,3 @@
-import { tables, orders } from "@/lib/data";
 import { TableGrid } from "@/components/pos/table-grid";
 
 export default function TableManagementPage() {
@@ -12,7 +11,7 @@ export default function TableManagementPage() {
           View table status and print KOTs or bills.
         </p>
       </header>
-      <TableGrid initialTables={tables} initialOrders={orders} />
+      <TableGrid />
     </div>
   );
 }

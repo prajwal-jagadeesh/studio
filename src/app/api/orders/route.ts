@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { Order, OrderItem } from '@/lib/data';
-import { orders as initialOrders } from '@/lib/data';
+import { orders as initialOrders, tables } from '@/lib/data';
 
 // In-memory "database"
 let orders: Order[] = [...initialOrders];
@@ -32,6 +32,14 @@ export async function POST(request: Request) {
     };
 
     orders.push(newOrder);
+
+    // Update the corresponding table
+    const table = tables.find(t => t.id === body.tableId);
+    if (table) {
+      table.status = 'occupied';
+      table.currentOrderId = newOrder.id;
+    }
+
 
     return NextResponse.json(newOrder, { status: 201 });
   } catch (error) {

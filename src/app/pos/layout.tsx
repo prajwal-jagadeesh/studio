@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Printer, BarChart, Utensils, LayoutGrid } from "lucide-react";
+import { BarChart, Utensils, LayoutGrid } from "lucide-react";
 import {
   Sidebar,
   SidebarProvider,
@@ -40,18 +40,6 @@ export default function PosLayout({
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={isActive("/pos") && pathname === "/pos"}
-                tooltip="Print Center"
-              >
-                <Link href="/pos">
-                  <Printer />
-                  <span>Print Center</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton
                 asChild

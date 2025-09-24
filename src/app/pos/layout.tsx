@@ -23,7 +23,7 @@ export default function PosLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isActive = (path: string) => pathname.startsWith(path);
+  const isActive = (path: string) => pathname === path;
 
   return (
     <SidebarProvider>

@@ -63,8 +63,9 @@ export function OrderStatusView({
   }, [initialOrder]);
 
   useEffect(() => {
-    if (order.status === "closed") {
-      // The order is fully complete, we don't need to poll anymore.
+    if (order.status === 'billed' || order.status === 'closed') {
+      // The order is finalized, no need to poll.
+      // If it's closed, the reset will be handled by the logic below.
       return;
     }
     
@@ -135,14 +136,7 @@ export function OrderStatusView({
             <span>Total</span>
             <span>₹{order.total.toFixed(2)}</span>
         </div>
-        {isOrderFinalized ? (
-            <Button
-            className="w-full"
-            onClick={onPlaceNewOrder}
-            >
-            Start New Order
-            </Button>
-        ) : (
+        {!isOrderFinalized && (
             <Button
             variant="outline"
             className="w-full"

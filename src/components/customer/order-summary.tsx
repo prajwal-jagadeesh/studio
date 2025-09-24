@@ -66,7 +66,7 @@ export function OrderSummary({
 
   const handlePlaceOrUpdateOrder = async () => {
     setIsLoading(true);
-    setIsConfirmOpen(false);
+    setIsConfirmOpen(false); // Close confirmation dialog if it was open
 
     if (activeOrder) {
       // Update existing order
@@ -77,17 +77,20 @@ export function OrderSummary({
           body: JSON.stringify(items),
         });
 
-        if (!response.ok) throw new Error("Failed to add items to order");
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to add items to order");
+        }
         
         const updatedOrder = await response.json();
         setUpdatedOrderDetails(updatedOrder);
         setSuccessMessage("Items Added Successfully!");
         setIsSuccessOpen(true);
-      } catch (error) {
+      } catch (error: any) {
         toast({
           variant: "destructive",
           title: "Update Failed",
-          description: "Could not add items to your order.",
+          description: error.message || "Could not add items to your order.",
         });
       } finally {
         setIsLoading(false);
@@ -152,6 +155,61 @@ export function OrderSummary({
   
   const displayTableName = activeOrder ? activeOrder.tableName : tables.find(t => t.id === selectedTableId)?.name;
   const isTableSelectionDisabled = !!activeOrder;
+
+  const renderPlaceOrderButton = () => {
+    if (activeOrder) {
+      // This is an incremental order. No confirmation needed.
+      return (
+        <Button
+          className="w-full"
+          size="lg"
+          onClick={handlePlaceOrUpdateOrder}
+          disabled={isLoading || items.length === 0}
+        >
+          {isLoading ? <Loader2 className="animate-spin" /> : "Add to Order"}
+        </Button>
+      );
+    }
+
+    // This is a new order, so we show the confirmation dialog.
+    return (
+      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <AlertDialogTrigger asChild>
+          <Button
+            className="w-full"
+            size="lg"
+            disabled={isLoading || !selectedTableId || items.length === 0}
+          >
+            {isLoading ? <Loader2 className="animate-spin" /> : "Place Order"}
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Your Order</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will place an order for table {displayTableName} with a total of ₹{total.toFixed(2)}. Are you sure?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="max-h-60 overflow-y-auto text-sm">
+            {items.map((item) => (
+              <div key={item.menuId} className="flex justify-between py-1">
+                <span>
+                  {item.name} x {item.qty}
+                </span>
+                <span>₹{(item.price * item.qty).toFixed(2)}</span>
+              </div>
+            ))}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Review Order</AlertDialogCancel>
+            <AlertDialogAction onClick={handlePlaceOrUpdateOrder}>
+              Confirm & Place
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  };
 
 
   return (
@@ -228,50 +286,7 @@ export function OrderSummary({
               <span>Total</span>
               <span>₹{total.toFixed(2)}</span>
             </div>
-            <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
-              <AlertDialogTrigger asChild>
-                <Button
-                  className="w-full"
-                  size="lg"
-                  disabled={isLoading || (!selectedTableId && !activeOrder)}
-                >
-                  {isLoading ? (
-                    <Loader2 className="animate-spin" />
-                  ) : (
-                    activeOrder ? "Add to Order" : "Place Order"
-                  )}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Confirm Your Items</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    These items will be added for a total of ₹{total.toFixed(2)} for table{" "}
-                    {displayTableName}. Are
-                    you sure?
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <div className="max-h-60 overflow-y-auto text-sm">
-                  {items.map((item) => (
-                    <div
-                      key={item.menuId}
-                      className="flex justify-between py-1"
-                    >
-                      <span>
-                        {item.name} x {item.qty}
-                      </span>
-                      <span>₹{(item.price * item.qty).toFixed(2)}</span>
-                    </div>
-                  ))}
-                </div>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Review Order</AlertDialogCancel>
-                  <AlertDialogAction onClick={handlePlaceOrUpdateOrder}>
-                    Confirm & Place
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            {renderPlaceOrderButton()}
             <Button
               variant="outline"
               className="w-full"

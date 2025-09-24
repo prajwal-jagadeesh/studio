@@ -31,11 +31,9 @@ export default function CaptainLayout({
       <Sidebar>
         <SidebarHeader>
           <div className="flex items-center gap-2 p-2">
-            <Button variant="ghost" size="icon" asChild>
-              <Link href="/">
-                <Utensils className="h-6 w-6 text-primary" />
-              </Link>
-            </Button>
+            <div className="flex items-center justify-center h-10 w-10">
+              <Utensils className="h-6 w-6 text-primary" />
+            </div>
             <h2 className="font-headline text-2xl font-bold text-primary whitespace-nowrap">
               Captain App
             </h2>

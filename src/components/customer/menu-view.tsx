@@ -4,9 +4,6 @@ import { useState } from "react";
 import type { MenuItem, OrderItem } from "@/lib/data";
 import { MenuTabs } from "./menu-tabs";
 import { OrderSummary } from "./order-summary";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "../ui/button";
 
 interface MenuViewProps {
   menuItems: MenuItem[];
@@ -50,12 +47,6 @@ export function MenuView({ menuItems }: MenuViewProps) {
 
   return (
     <div className="container mx-auto px-4 py-8">
-       <Button variant="ghost" asChild className="mb-4">
-        <Link href="/">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Home
-        </Link>
-      </Button>
       <header className="text-center mb-8">
         <h1 className="font-headline text-4xl font-bold text-primary">Our Menu</h1>
         <p className="text-muted-foreground mt-2">

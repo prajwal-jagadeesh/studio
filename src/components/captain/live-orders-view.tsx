@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Order, MenuItem } from "@/lib/data";
 import {
   Table,
@@ -21,13 +21,13 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Loader2 } from "lucide-react";
 import { MenuItemRecommender } from "./menu-item-recommender";
 import { formatDistanceToNow } from 'date-fns';
+import { useToast } from "@/hooks/use-toast";
 
 interface LiveOrdersViewProps {
   initialOrders: Order[];
@@ -45,15 +45,58 @@ const statusColors: Record<Order["status"], string> = {
 
 export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps) {
   const [orders, setOrders] = useState<Order[]>(initialOrders);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const { toast } = useToast();
 
-  const handleStatusChange = (orderId: string, status: Order["status"]) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.id === orderId ? { ...order, status } : order
-      )
-    );
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch('/api/orders');
+        if (!response.ok) {
+          throw new Error('Failed to fetch orders');
+        }
+        const data = await response.json();
+        setOrders(data.sort((a:Order, b:Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Could not fetch orders.",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchOrders();
+    const interval = setInterval(fetchOrders, 5000); // Poll for new orders every 5 seconds
+    return () => clearInterval(interval);
+  }, [toast]);
+
+
+  const handleStatusChange = async (orderId: string, status: Order["status"]) => {
+     try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update status');
+
+      const updatedOrder = await response.json();
+      setOrders(prevOrders =>
+        prevOrders.map(o => (o.id === updatedOrder.id ? updatedOrder : o))
+      );
+    } catch (error) {
+       toast({
+        variant: "destructive",
+        title: "Update Failed",
+        description: "Could not update order status.",
+      });
+    }
   };
   
   const openOrderDetails = (order: Order) => {
@@ -61,7 +104,15 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
     setIsDialogOpen(true);
   }
 
-  const sortedOrders = [...orders].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  const sortedOrders = [...orders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -89,7 +140,7 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
                     {order.status}
                   </Badge>
                 </TableCell>
-                <TableCell>{formatDistanceToNow(order.createdAt, { addSuffix: true })}</TableCell>
+                <TableCell>{formatDistanceToNow(new Date(order.createdAt), { addSuffix: true })}</TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

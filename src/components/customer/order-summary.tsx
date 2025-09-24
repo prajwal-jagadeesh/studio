@@ -1,6 +1,6 @@
 "use client";
 
-import type { OrderItem } from "@/lib/data";
+import type { OrderItem, Order } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { ShoppingCart, Trash2, CheckCircle } from "lucide-react";
+import { ShoppingCart, Trash2, CheckCircle, Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface OrderSummaryProps {
   items: OrderItem[];
@@ -34,14 +35,49 @@ interface OrderSummaryProps {
 export function OrderSummary({ items, onUpdateQuantity, onClearOrder }: OrderSummaryProps) {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
   const total = items.reduce((sum, item) => sum + item.price * item.qty, 0);
 
-  const handlePlaceOrder = () => {
-    // In a real app, this would send the order to a backend.
-    console.log("Placing order:", items);
+  const handlePlaceOrder = async () => {
+    setIsLoading(true);
     setIsConfirmOpen(false);
-    setIsSuccessOpen(true);
-    onClearOrder();
+
+    try {
+      // In a real app, this would come from table QR code or login
+      const mockOrderDetails = {
+        tableId: "T2",
+        tableName: "Table 2",
+      };
+
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...mockOrderDetails,
+          items: items,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to place order');
+      }
+
+      setIsSuccessOpen(true);
+      onClearOrder();
+    } catch (error) {
+      console.error("Order placement failed:", error);
+      toast({
+        variant: "destructive",
+        title: "Order Failed",
+        description: "Could not place your order at this time. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -87,7 +123,9 @@ export function OrderSummary({ items, onUpdateQuantity, onClearOrder }: OrderSum
             </div>
             <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
               <AlertDialogTrigger asChild>
-                <Button className="w-full" size="lg">Place Order</Button>
+                <Button className="w-full" size="lg" disabled={isLoading}>
+                  {isLoading ? <Loader2 className="animate-spin" /> : 'Place Order'}
+                </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>

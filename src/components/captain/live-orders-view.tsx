@@ -93,11 +93,6 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
         prevOrders.map(o => (o.id === updatedOrder.id ? updatedOrder : o))
       );
 
-       // If an order is billed, update the table status to 'billing'
-       if (status === 'billed') {
-        await updateTableStatus(updatedOrder.tableId, 'billing');
-      }
-
       // If an order is closed, update the table status to 'available'
       if (status === 'closed') {
         await updateTableStatus(updatedOrder.tableId, 'available');
@@ -185,15 +180,12 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
                        {order.status === 'pending' && (
                         <DropdownMenuItem onClick={() => handleStatusChange(order.id, "confirmed")}>Confirm Order</DropdownMenuItem>
                        )}
-                        {order.status === 'ready' && (
+                       {order.status === 'ready' && (
                         <DropdownMenuItem onClick={() => handleStatusChange(order.id, "served")}>Mark as Served</DropdownMenuItem>
-                       )}
-                       {order.status === 'served' && (
-                        <DropdownMenuItem onClick={() => handleStatusChange(order.id, "billed")}>Mark as Billed</DropdownMenuItem>
                        )}
                        {order.status === 'billed' && (
                         <>
-                          <DropdownMenuItem disabled>Payment Received</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => toast({ title: "Payment Received", description: "You can now close the order." })}>Payment Received</DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleStatusChange(order.id, "closed")}>Close Order</DropdownMenuItem>
                         </>
                        )}

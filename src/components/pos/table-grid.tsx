@@ -13,7 +13,8 @@ import { Button } from "../ui/button";
 import { KOTPreview } from "./kot-preview";
 import { BillPreview } from "./bill-preview";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, CheckCircle, CookingPot } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 
 const statusStyles = {
   available: {
@@ -99,6 +100,9 @@ export function TableGrid() {
     if (type === 'kot' && order.status === 'confirmed') {
       handleOrderStatusChange(order.id, 'preparing');
     }
+    if (type === 'bill' && order.status === 'served') {
+      handleOrderStatusChange(order.id, 'billed');
+    }
     
     setOrderToPrint(order);
     setPrintType(type);
@@ -170,6 +174,16 @@ export function TableGrid() {
               <CardFooter className="flex flex-col items-stretch gap-2">
                 {currentOrder && (
                   <>
+                     {currentOrder.status === 'preparing' && (
+                      <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => handleOrderStatusChange(currentOrder.id, 'ready')}
+                      >
+                          <CookingPot className="mr-2"/> Mark Ready
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"
@@ -183,7 +197,7 @@ export function TableGrid() {
                       size="sm" 
                       className="w-full" 
                       onClick={() => handlePrint(currentOrder.id, "bill")}
-                      disabled={currentOrder.status !== 'served' && currentOrder.status !== 'billed'}
+                      disabled={currentOrder.status !== 'served'}
                       >
                       Print Bill
                     </Button>

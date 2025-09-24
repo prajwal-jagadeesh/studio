@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { tables } from '@/lib/data';
+import { tables, orders } from '@/lib/data';
 import type { Table } from '@/lib/data';
 
 export async function PATCH(
@@ -19,6 +19,12 @@ export async function PATCH(
   }
   
   table.status = body.status;
+
+  // If the order is billed, set table status to billing
+  const order = orders.find(o => o.tableId === params.tableId);
+  if (order && order.status === 'billed') {
+    table.status = 'billing';
+  }
 
   return NextResponse.json(table, { status: 200 });
 }

@@ -108,12 +108,10 @@ export function PrintView({ orders }: PrintViewProps) {
           </div>
           <DialogFooter>
              <Button variant="outline" onClick={closeDialog}>Cancel</Button>
-            <div onClick={triggerPrint}>
-                <Button>
-                  <Printer className="mr-2 h-4 w-4" />
-                  Print
-                </Button>
-            </div>
+            <Button onClick={triggerPrint}>
+              <Printer className="mr-2 h-4 w-4" />
+              Print
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import type { MenuItem, OrderItem } from "@/lib/data";
+import { useState, useEffect } from "react";
+import type { MenuItem, OrderItem, Table } from "@/lib/data";
 import { MenuTabs } from "./menu-tabs";
 import { OrderSummary } from "./order-summary";
+import { getTables } from "@/services/get-tables";
 
 interface MenuViewProps {
   menuItems: MenuItem[];
@@ -11,6 +12,15 @@ interface MenuViewProps {
 
 export function MenuView({ menuItems }: MenuViewProps) {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [tables, setTables] = useState<Table[]>([]);
+
+  useEffect(() => {
+    async function fetchTables() {
+      const fetchedTables = await getTables();
+      setTables(fetchedTables);
+    }
+    fetchTables();
+  }, []);
 
   const addToOrder = (item: MenuItem) => {
     setOrderItems((prevItems) => {
@@ -60,6 +70,7 @@ export function MenuView({ menuItems }: MenuViewProps) {
         <div className="lg:col-span-1 sticky top-8">
           <OrderSummary
             items={orderItems}
+            tables={tables}
             onUpdateQuantity={updateQuantity}
             onClearOrder={clearOrder}
           />

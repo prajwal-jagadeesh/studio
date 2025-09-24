@@ -53,6 +53,14 @@ export function PrintView({ orders }: PrintViewProps) {
     setDialogType(null);
   }
 
+  const triggerPrint = () => {
+    if (dialogType === 'KOT') {
+      handlePrintKOT();
+    } else if (dialogType === 'Bill') {
+      handlePrintBill();
+    }
+  };
+
   return (
     <>
       <div className="border rounded-lg">
@@ -104,10 +112,10 @@ export function PrintView({ orders }: PrintViewProps) {
           </div>
           <DialogFooter>
              <Button variant="outline" onClick={closeDialog}>Cancel</Button>
-            <Button onClick={dialogType === 'KOT' ? handlePrintKOT : handlePrintBill}>
-              <Printer className="mr-2 h-4 w-4" />
-              Print
-            </Button>
+             <Button onClick={triggerPrint}>
+                <Printer className="mr-2 h-4 w-4" />
+                Print
+              </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

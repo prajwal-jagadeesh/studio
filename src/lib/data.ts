@@ -8,6 +8,7 @@ export type MenuItem = {
   category: "Starters" | "Main Course" | "Breads" | "Desserts" | "Beverages";
   imageUrl: string;
   imageHint: string;
+  available: boolean;
 };
 
 export type OrderItem = {
@@ -53,7 +54,8 @@ export const menuItems: MenuItem[] = [
       description: "Creamy chunks of paneer marinated in spices and grilled in a tandoor.",
       price: 250,
       category: "Starters",
-      ...findImage("paneer_tikka")
+      ...findImage("paneer_tikka"),
+      available: true,
     },
     {
       id: "2",
@@ -61,7 +63,8 @@ export const menuItems: MenuItem[] = [
       description: "Minced vegetables blended with spices, skewered and cooked.",
       price: 220,
       category: "Starters",
-      ...findImage("veg_kebab")
+      ...findImage("veg_kebab"),
+      available: true,
     },
     {
       id: "3",
@@ -69,7 +72,8 @@ export const menuItems: MenuItem[] = [
       description: "Paneer cooked in a rich, creamy tomato-based gravy.",
       price: 350,
       category: "Main Course",
-      ...findImage("shahi_paneer")
+      ...findImage("shahi_paneer"),
+      available: true,
     },
     {
       id: "4",
@@ -77,7 +81,8 @@ export const menuItems: MenuItem[] = [
       description: "Black lentils and kidney beans cooked in a buttery, creamy gravy.",
       price: 300,
       category: "Main Course",
-      ...findImage("dal_makhani")
+      ...findImage("dal_makhani"),
+      available: true,
     },
     {
       id: "5",
@@ -85,7 +90,8 @@ export const menuItems: MenuItem[] = [
       description: "Aromatic rice dish with mixed vegetables and fragrant spices.",
       price: 280,
       category: "Main Course",
-      ...findImage("veg_biryani")
+      ...findImage("veg_biryani"),
+      available: true,
     },
     {
       id: "6",
@@ -93,7 +99,8 @@ export const menuItems: MenuItem[] = [
       description: "Soft, fluffy flatbread with a generous layer of butter.",
       price: 60,
       category: "Breads",
-      ...findImage("naan")
+      ...findImage("naan"),
+      available: true,
     },
     {
       id: "7",
@@ -101,7 +108,8 @@ export const menuItems: MenuItem[] = [
       description: "Flatbread flavored with garlic and herbs.",
       price: 70,
       category: "Breads",
-      ...findImage("naan")
+      ...findImage("naan"),
+      available: true,
     },
     {
       id: "8",
@@ -109,7 +117,8 @@ export const menuItems: MenuItem[] = [
       description: "Soft, spongy balls made of milk solids, soaked in sweet syrup.",
       price: 120,
       category: "Desserts",
-      ...findImage("gulab_jamun")
+      ...findImage("gulab_jamun"),
+      available: true,
     },
     {
       id: "9",
@@ -117,7 +126,8 @@ export const menuItems: MenuItem[] = [
       description: "Chenna discs soaked in thickened, sweetened milk.",
       price: 150,
       category: "Desserts",
-      ...findImage("ras_malai")
+      ...findImage("ras_malai"),
+      available: true,
     },
     {
       id: "10",
@@ -125,7 +135,8 @@ export const menuItems: MenuItem[] = [
       description: "A refreshing drink with lemon juice, soda, and a hint of spice.",
       price: 90,
       category: "Beverages",
-      ...findImage("lime_soda")
+      ...findImage("lime_soda"),
+      available: true,
     }
   ];
 

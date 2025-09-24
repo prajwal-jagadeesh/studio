@@ -13,10 +13,21 @@ interface MenuViewProps {
   menuItems: MenuItem[];
 }
 
-export function MenuView({ menuItems }: MenuViewProps) {
+export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
   const [placedOrder, setPlacedOrder] = useState<Order | null>(null);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
+  
+  useEffect(() => {
+    async function fetchMenuItems() {
+        const response = await fetch('/api/menu');
+        const data = await response.json();
+        setMenuItems(data);
+    }
+    const interval = setInterval(fetchMenuItems, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     async function fetchTables() {
@@ -73,8 +84,7 @@ export function MenuView({ menuItems }: MenuViewProps) {
     setPlacedOrder(null);
   };
 
-  // Determine if we are in the "adding more items" flow
-  const isAddingToOrder = placedOrder !== null && orderItems.length > 0;
+  const shouldShowOrderSummary = orderItems.length > 0;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -86,16 +96,26 @@ export function MenuView({ menuItems }: MenuViewProps) {
       </header>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2">
-          <MenuTabs menuItems={menuItems} onAddToOrder={addToOrder} />
+          <MenuTabs menuItems={menuItems.filter(item => item.available)} onAddToOrder={addToOrder} />
         </div>
         <div className="lg:col-span-1 sticky top-8">
-          {placedOrder && !isAddingToOrder ? (
+          {shouldShowOrderSummary ? (
+             <OrderSummary
+              items={orderItems}
+              tables={tables}
+              onUpdateQuantity={updateQuantity}
+              onClearOrder={clearOrder}
+              onOrderPlaced={handleOrderPlaced}
+              onOrderUpdated={handleOrderUpdated}
+              activeOrder={placedOrder}
+            />
+          ) : placedOrder ? (
             <OrderStatusView 
               order={placedOrder} 
               onPlaceNewOrder={handlePlaceNewOrder}
             />
           ) : (
-            <OrderSummary
+             <OrderSummary
               items={orderItems}
               tables={tables}
               onUpdateQuantity={updateQuantity}

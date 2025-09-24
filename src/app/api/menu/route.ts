@@ -19,6 +19,7 @@ export async function POST(request: Request) {
     const newMenuItem: MenuItem = {
       id: `M${menuItems.length + 1}`,
       ...newItemData,
+      available: newItemData.available,
       // Provide default placeholder images for new items
       imageUrl: 'https://picsum.photos/seed/new/600/400',
       imageHint: 'new dish',

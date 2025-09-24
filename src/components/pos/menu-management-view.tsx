@@ -59,6 +59,9 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "../ui/checkbox";
+import { Label } from "../ui/label";
+import { Badge } from "../ui/badge";
 
 interface MenuManagementViewProps {
   initialItems: MenuItem[];
@@ -69,6 +72,7 @@ const menuSchema = z.object({
   description: z.string().min(1, "Description is required"),
   price: z.coerce.number().positive("Price must be a positive number"),
   category: z.enum(["Starters", "Main Course", "Breads", "Desserts", "Beverages"]),
+  available: z.boolean().default(true),
 });
 
 type MenuFormValues = z.infer<typeof menuSchema>;
@@ -94,6 +98,7 @@ export function MenuManagementView({ initialItems }: MenuManagementViewProps) {
       description: "",
       price: 0,
       category: "Starters",
+      available: true,
     },
   });
 
@@ -113,7 +118,7 @@ export function MenuManagementView({ initialItems }: MenuManagementViewProps) {
     if (item) {
       form.reset(item);
     } else {
-      form.reset({ name: "", description: "", price: 0, category: "Starters" });
+      form.reset({ name: "", description: "", price: 0, category: "Starters", available: true });
     }
     setIsDialogOpen(true);
   };
@@ -184,6 +189,7 @@ export function MenuManagementView({ initialItems }: MenuManagementViewProps) {
                         <TableRow>
                         <TableHead>Name</TableHead>
                         <TableHead>Price</TableHead>
+                        <TableHead>Status</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -192,6 +198,11 @@ export function MenuManagementView({ initialItems }: MenuManagementViewProps) {
                         <TableRow key={item.id}>
                             <TableCell className="font-medium">{item.name}</TableCell>
                             <TableCell>₹{item.price.toFixed(2)}</TableCell>
+                            <TableCell>
+                                <Badge variant={item.available ? "default" : "destructive"}>
+                                    {item.available ? "Available" : "Unavailable"}
+                                </Badge>
+                            </TableCell>
                             <TableCell className="text-right">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -304,6 +315,24 @@ export function MenuManagementView({ initialItems }: MenuManagementViewProps) {
                         </SelectContent>
                      </Select>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="available"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <div className="space-y-0.5">
+                        <FormLabel>Available</FormLabel>
+                        <FormMessage />
+                    </div>
+                    <FormControl>
+                        <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                        />
+                    </FormControl>
                   </FormItem>
                 )}
               />

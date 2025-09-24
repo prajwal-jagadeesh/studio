@@ -185,9 +185,6 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
                        {order.status === 'pending' && (
                         <DropdownMenuItem onClick={() => handleStatusChange(order.id, "confirmed")}>Confirm Order</DropdownMenuItem>
                        )}
-                       {order.status === 'confirmed' && (
-                        <DropdownMenuItem onClick={() => handleStatusChange(order.id, "ready")}>Mark as Ready</DropdownMenuItem>
-                       )}
                        {order.status === 'ready' && (
                         <DropdownMenuItem onClick={() => handleStatusChange(order.id, "served")}>Mark as Served</DropdownMenuItem>
                        )}

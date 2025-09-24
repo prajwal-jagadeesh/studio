@@ -52,12 +52,12 @@ export function OrderStatusView({
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    // Don't poll if the order is already in a final state
+    if (["served", "billed", "closed"].includes(order.status)) {
+      return;
+    }
+
     const fetchStatus = async () => {
-      // Don't poll if the order is already served, billed, or closed
-      if (["served", "billed", "closed"].includes(order.status)) {
-        setIsLoading(false);
-        return;
-      }
       setIsLoading(true);
       try {
         const response = await fetch(`/api/orders/${order.id}`);
@@ -74,7 +74,7 @@ export function OrderStatusView({
 
     const interval = setInterval(fetchStatus, 5000); // Poll every 5 seconds
     return () => clearInterval(interval);
-  }, [order.id]);
+  }, [order.id, order.status]);
 
   const currentStatus = statusInfo[order.status];
   const StatusIcon = currentStatus.icon;

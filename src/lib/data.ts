@@ -129,7 +129,7 @@ export const menuItems: MenuItem[] = [
     }
   ];
 
-export const tables: Table[] = [
+export let tables: Table[] = [
   { id: "T1", name: "Table 1", status: "available", currentOrderId: null },
   { id: "T2", name: "Table 2", status: "available", currentOrderId: null },
   { id: "T3", name: "Table 3", status: "available", currentOrderId: null },
@@ -138,7 +138,7 @@ export const tables: Table[] = [
   { id: "T6", name: "Table 6", status: "available", currentOrderId: null },
 ];
 
-export const orders: Order[] = [];
+export let orders: Order[] = [];
 
 export const analyticsData: AnalyticsData[] = [
     { date: "2023-10-01", totalOrders: 15, revenue: 12500 },

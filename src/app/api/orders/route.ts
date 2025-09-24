@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { Order, OrderItem } from '@/lib/data';
-import { orders as initialOrders, tables } from '@/lib/data';
-
-// In-memory "database"
-let orders: Order[] = [...initialOrders];
+import { orders, tables } from '@/lib/data';
 
 // GET /api/orders - Fetches all orders
 export async function GET() {

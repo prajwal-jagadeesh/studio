@@ -41,6 +41,8 @@ interface OrderSummaryProps {
   onUpdateQuantity: (menuId: string, quantity: number) => void;
   onClearOrder: () => void;
   onOrderPlaced: (order: Order) => void;
+  onOrderUpdated: (order: Order) => void;
+  activeOrder: Order | null;
 }
 
 export function OrderSummary({
@@ -49,78 +51,108 @@ export function OrderSummary({
   onUpdateQuantity,
   onClearOrder,
   onOrderPlaced,
+  onOrderUpdated,
+  activeOrder
 }: OrderSummaryProps) {
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [placedOrderDetails, setPlacedOrderDetails] = useState<Order | null>(null);
+  const [successMessage, setSuccessMessage] = useState("Order Placed Successfully!");
+  const [updatedOrderDetails, setUpdatedOrderDetails] = useState<Order | null>(null);
   const { toast } = useToast();
 
   const total = items.reduce((sum, item) => sum + item.price * item.qty, 0);
 
-  const handlePlaceOrder = async () => {
-    if (!selectedTableId) {
-      toast({
-        variant: "destructive",
-        title: "No Table Selected",
-        description: "Please select a table before placing an order.",
-      });
-      setIsConfirmOpen(false);
-      return;
-    }
+  const handlePlaceOrUpdateOrder = async () => {
     setIsLoading(true);
     setIsConfirmOpen(false);
 
-    try {
-      const selectedTable = tables.find((t) => t.id === selectedTableId);
-      if (!selectedTable) throw new Error("Selected table not found");
-      
-      const orderDetails = {
-        tableId: selectedTable.id,
-        tableName: selectedTable.name,
-      };
+    if (activeOrder) {
+      // Update existing order
+      try {
+        const response = await fetch(`/api/orders/${activeOrder.id}/add-items`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(items),
+        });
 
-      const response = await fetch("/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...orderDetails,
-          items: items,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to place order");
+        if (!response.ok) throw new Error("Failed to add items to order");
+        
+        const updatedOrder = await response.json();
+        setUpdatedOrderDetails(updatedOrder);
+        setSuccessMessage("Items Added Successfully!");
+        setIsSuccessOpen(true);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Update Failed",
+          description: "Could not add items to your order.",
+        });
+      } finally {
+        setIsLoading(false);
       }
-      
-      const newOrder = await response.json();
-      setPlacedOrderDetails(newOrder);
-      setIsSuccessOpen(true);
-      // We no longer clear the order here; we lift the state up.
 
-    } catch (error) {
-      console.error("Order placement failed:", error);
-      toast({
-        variant: "destructive",
-        title: "Order Failed",
-        description:
-          "Could not place your order at this time. Please try again.",
-      });
-    } finally {
-      setIsLoading(false);
+    } else {
+      // Place new order
+      if (!selectedTableId) {
+        toast({
+          variant: "destructive",
+          title: "No Table Selected",
+          description: "Please select a table before placing an order.",
+        });
+        setIsLoading(false);
+        return;
+      }
+      try {
+        const selectedTable = tables.find((t) => t.id === selectedTableId);
+        if (!selectedTable) throw new Error("Selected table not found");
+        
+        const orderDetails = {
+          tableId: selectedTable.id,
+          tableName: selectedTable.name,
+        };
+
+        const response = await fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...orderDetails, items: items }),
+        });
+
+        if (!response.ok) throw new Error("Failed to place order");
+        
+        const newOrder = await response.json();
+        setUpdatedOrderDetails(newOrder);
+        setSuccessMessage("Order Placed Successfully!");
+        setIsSuccessOpen(true);
+
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Order Failed",
+          description: "Could not place your order. Please try again.",
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
   const handleSuccessDialogClose = () => {
     setIsSuccessOpen(false);
-    if(placedOrderDetails) {
-      onOrderPlaced(placedOrderDetails);
+    if(updatedOrderDetails) {
+        if(activeOrder) {
+            onOrderUpdated(updatedOrderDetails);
+        } else {
+            onOrderPlaced(updatedOrderDetails);
+        }
     }
     setSelectedTableId(null);
   }
+  
+  const displayTableName = activeOrder ? activeOrder.tableName : tables.find(t => t.id === selectedTableId)?.name;
+  const isTableSelectionDisabled = !!activeOrder;
+
 
   return (
     <>
@@ -128,7 +160,7 @@ export function OrderSummary({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-headline">
             <ShoppingCart className="h-6 w-6 text-primary" />
-            Your Order
+            {activeOrder ? `Adding to Order #${activeOrder.id}`: "Your Order"}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -141,20 +173,27 @@ export function OrderSummary({
               <div className="space-y-2 mb-4">
                 <Label htmlFor="table-select">Select Table</Label>
                 <Select
-                  value={selectedTableId ?? ""}
+                  value={activeOrder ? activeOrder.tableId : (selectedTableId ?? "")}
                   onValueChange={setSelectedTableId}
+                  disabled={isTableSelectionDisabled}
                 >
                   <SelectTrigger id="table-select">
                     <SelectValue placeholder="Choose a table" />
                   </SelectTrigger>
                   <SelectContent>
-                    {tables
-                      .filter((t) => t.status === "available")
-                      .map((table) => (
-                        <SelectItem key={table.id} value={table.id}>
-                          {table.name}
+                    {isTableSelectionDisabled && activeOrder ? (
+                        <SelectItem key={activeOrder.tableId} value={activeOrder.tableId}>
+                            {activeOrder.tableName}
                         </SelectItem>
-                      ))}
+                    ) : (
+                        tables
+                        .filter((t) => t.status === "available")
+                        .map((table) => (
+                            <SelectItem key={table.id} value={table.id}>
+                            {table.name}
+                            </SelectItem>
+                        ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -194,22 +233,21 @@ export function OrderSummary({
                 <Button
                   className="w-full"
                   size="lg"
-                  disabled={isLoading || !selectedTableId}
+                  disabled={isLoading || (!selectedTableId && !activeOrder)}
                 >
                   {isLoading ? (
                     <Loader2 className="animate-spin" />
                   ) : (
-                    "Place Order"
+                    activeOrder ? "Add to Order" : "Place Order"
                   )}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Confirm Your Order</AlertDialogTitle>
+                  <AlertDialogTitle>Confirm Your Items</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Your order for a total of ₹{total.toFixed(2)} will be
-                    placed for table{" "}
-                    {tables.find((t) => t.id === selectedTableId)?.name}. Are
+                    These items will be added for a total of ₹{total.toFixed(2)} for table{" "}
+                    {displayTableName}. Are
                     you sure?
                   </AlertDialogDescription>
                 </AlertDialogHeader>
@@ -228,7 +266,7 @@ export function OrderSummary({
                 </div>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Review Order</AlertDialogCancel>
-                  <AlertDialogAction onClick={handlePlaceOrder}>
+                  <AlertDialogAction onClick={handlePlaceOrUpdateOrder}>
                     Confirm & Place
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -250,9 +288,9 @@ export function OrderSummary({
         <AlertDialogContent>
           <AlertDialogHeader className="items-center">
             <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
-            <AlertDialogTitle>Order Placed Successfully!</AlertDialogTitle>
+            <AlertDialogTitle>{successMessage}</AlertDialogTitle>
             <AlertDialogDescription>
-              Your order has been sent to the kitchen. You can now track its status.
+              You can now track the updated order status.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

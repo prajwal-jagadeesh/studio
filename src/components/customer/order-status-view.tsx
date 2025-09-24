@@ -18,6 +18,7 @@ import { Clock, ChefHat, CheckCircle, Bell, Loader2,ThumbsUp } from "lucide-reac
 interface OrderStatusViewProps {
   order: Order;
   onPlaceNewOrder: () => void;
+  onAddMoreItems: () => void;
 }
 
 const statusInfo: Record<
@@ -52,9 +53,15 @@ const statusInfo: Record<
 export function OrderStatusView({
   order: initialOrder,
   onPlaceNewOrder,
+  onAddMoreItems,
 }: OrderStatusViewProps) {
   const [order, setOrder] = useState<Order>(initialOrder);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    // When the initial order prop changes, update our internal state
+    setOrder(initialOrder);
+  }, [initialOrder]);
 
   useEffect(() => {
     if (order.status === "closed") {
@@ -93,7 +100,7 @@ export function OrderStatusView({
     <Card className="shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center justify-between font-headline">
-          <span>Order #{order.id}</span>
+          <span>Order #{order.id} for {order.tableName}</span>
            {isLoading && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
         </CardTitle>
       </CardHeader>
@@ -132,7 +139,7 @@ export function OrderStatusView({
         <Button
           variant="outline"
           className="w-full"
-          onClick={onPlaceNewOrder}
+          onClick={onAddMoreItems}
         >
           Place Another Order
         </Button>

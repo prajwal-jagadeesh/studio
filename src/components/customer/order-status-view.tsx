@@ -13,7 +13,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, ChefHat, CheckCircle, Bell, Loader2 } from "lucide-react";
+import { Clock, ChefHat, CheckCircle, Bell, Loader2,ThumbsUp } from "lucide-react";
 
 interface OrderStatusViewProps {
   order: Order;
@@ -28,6 +28,11 @@ const statusInfo: Record<
     text: "Pending Confirmation",
     icon: Clock,
     color: "bg-yellow-500",
+  },
+  confirmed: {
+    text: "Order Confirmed",
+    icon: ThumbsUp,
+    color: "bg-orange-500",
   },
   preparing: {
     text: "Preparing Your Meal",
@@ -92,7 +97,7 @@ export function OrderStatusView({
           <h4 className="font-semibold mb-2">Status</h4>
           <Badge
             variant="secondary"
-            className="text-white text-sm w-full justify-center"
+            className="text-white text-sm w-full justify-center capitalize"
             style={{ backgroundColor: `hsl(${currentStatus.color.replace('bg-', '')})` }}
           >
             <StatusIcon className="mr-2 h-4 w-4" />

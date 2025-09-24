@@ -37,6 +37,7 @@ interface LiveOrdersViewProps {
 
 const statusColors: Record<Order["status"], string> = {
   pending: "bg-yellow-500",
+  confirmed: "bg-orange-500",
   preparing: "bg-blue-500",
   ready: "bg-green-500",
   served: "bg-purple-500",
@@ -164,7 +165,7 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
                 <TableCell>{order.tableName}</TableCell>
                 <TableCell>₹{order.total.toFixed(2)}</TableCell>
                 <TableCell>
-                  <Badge variant="secondary" className="text-white" style={{ backgroundColor: `hsl(${statusColors[order.status].replace('bg-', '')})` }}>
+                  <Badge variant="secondary" className="text-white capitalize" style={{ backgroundColor: `hsl(${statusColors[order.status].replace('bg-', '')})` }}>
                      <span className={`inline-block w-2 h-2 mr-2 rounded-full ${statusColors[order.status]}`}></span>
                     {order.status}
                   </Badge>
@@ -182,9 +183,9 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
                       <DropdownMenuItem onClick={() => openOrderDetails(order)}>View Details</DropdownMenuItem>
                       <DropdownMenuSeparator />
                        {order.status === 'pending' && (
-                        <DropdownMenuItem onClick={() => handleStatusChange(order.id, "preparing")}>Mark as Preparing</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleStatusChange(order.id, "confirmed")}>Confirm Order</DropdownMenuItem>
                        )}
-                       {order.status === 'preparing' && (
+                       {order.status === 'confirmed' && (
                         <DropdownMenuItem onClick={() => handleStatusChange(order.id, "ready")}>Mark as Ready</DropdownMenuItem>
                        )}
                        {order.status === 'ready' && (

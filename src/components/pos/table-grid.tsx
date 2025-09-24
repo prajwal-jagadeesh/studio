@@ -50,31 +50,31 @@ export function TableGrid() {
   const kotPrintRef = useRef<HTMLDivElement>(null);
   const billPrintRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [tablesRes, ordersRes] = await Promise.all([
-          fetch('/api/tables'),
-          fetch('/api/orders')
-        ]);
-        if (!tablesRes.ok || !ordersRes.ok) {
-          throw new Error('Failed to fetch data');
-        }
-        const tablesData = await tablesRes.json();
-        const ordersData = await ordersRes.json();
-        setTables(tablesData);
-        setOrders(ordersData);
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Could not fetch table or order data.",
-        });
-      } finally {
-        setIsLoading(false);
+  const fetchData = async () => {
+    try {
+      const [tablesRes, ordersRes] = await Promise.all([
+        fetch('/api/tables'),
+        fetch('/api/orders')
+      ]);
+      if (!tablesRes.ok || !ordersRes.ok) {
+        throw new Error('Failed to fetch data');
       }
-    };
+      const tablesData = await tablesRes.json();
+      const ordersData = await ordersRes.json();
+      setTables(tablesData);
+      setOrders(ordersData);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not fetch table or order data.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 5000); // Poll for updates every 5 seconds
     return () => clearInterval(interval);
@@ -88,8 +88,7 @@ export function TableGrid() {
         body: JSON.stringify({ status }),
       });
       if (!response.ok) throw new Error('Failed to update status');
-      const updatedTable = await response.json();
-      setTables((prev) => prev.map(t => t.id === tableId ? updatedTable : t));
+      await fetchData(); // Refetch data to ensure consistency
     } catch (error) {
       toast({
         variant: "destructive",
@@ -98,10 +97,32 @@ export function TableGrid() {
       });
     }
   };
+
+  const handleOrderStatusChange = async (orderId: string, status: Order["status"]) => {
+    try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      if (!response.ok) throw new Error('Failed to update order status');
+      await fetchData(); // Refetch data
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Order Update Failed",
+        description: "Could not update order status.",
+      });
+    }
+  };
   
   const handlePrint = (orderId: string, type: "kot" | "bill") => {
     const order = orders.find(o => o.id === orderId);
     if (!order) return;
+
+    if (type === 'kot' && order.status === 'confirmed') {
+      handleOrderStatusChange(order.id, 'preparing');
+    }
     
     setOrderToPrint(order);
     setPrintType(type);
@@ -158,9 +179,14 @@ export function TableGrid() {
                 {table.status}
               </p>
               {table.status !== "available" && table.currentOrderId && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Order: {table.currentOrderId}
-                </p>
+                 <div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                    Order: {table.currentOrderId}
+                    </p>
+                    <p className="text-xs text-muted-foreground capitalize">
+                    Status: {orders.find(o => o.id === table.currentOrderId)?.status}
+                    </p>
+                </div>
               )}
             </CardContent>
             <CardFooter className="flex flex-col items-stretch gap-2">
@@ -193,6 +219,7 @@ export function TableGrid() {
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => handleStatusChange(table.id, "occupied")}
+                    disabled
                   >
                     Occupied
                   </DropdownMenuItem>

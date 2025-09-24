@@ -23,7 +23,7 @@ export type Order = {
   tableName: string;
   items: OrderItem[];
   total: number;
-  status: "pending" | "preparing" | "ready" | "served" | "billed" | "closed";
+  status: "pending" | "confirmed" | "preparing" | "ready" | "served" | "billed" | "closed";
   createdAt: Date;
 };
 

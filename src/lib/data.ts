@@ -46,7 +46,88 @@ const findImage = (id: string) => {
     return { imageUrl: image.imageUrl, imageHint: image.imageHint };
 }
 
-export const menuItems: MenuItem[] = [];
+export const menuItems: MenuItem[] = [
+    {
+      id: "1",
+      name: "Paneer Tikka",
+      description: "Creamy chunks of paneer marinated in spices and grilled in a tandoor.",
+      price: 250,
+      category: "Starters",
+      ...findImage("paneer_tikka")
+    },
+    {
+      id: "2",
+      name: "Veg Seekh Kebab",
+      description: "Minced vegetables blended with spices, skewered and cooked.",
+      price: 220,
+      category: "Starters",
+      ...findImage("veg_kebab")
+    },
+    {
+      id: "3",
+      name: "Shahi Paneer",
+      description: "Paneer cooked in a rich, creamy tomato-based gravy.",
+      price: 350,
+      category: "Main Course",
+      ...findImage("shahi_paneer")
+    },
+    {
+      id: "4",
+      name: "Dal Makhani",
+      description: "Black lentils and kidney beans cooked in a buttery, creamy gravy.",
+      price: 300,
+      category: "Main Course",
+      ...findImage("dal_makhani")
+    },
+    {
+      id: "5",
+      name: "Veg Biryani",
+      description: "Aromatic rice dish with mixed vegetables and fragrant spices.",
+      price: 280,
+      category: "Main Course",
+      ...findImage("veg_biryani")
+    },
+    {
+      id: "6",
+      name: "Butter Naan",
+      description: "Soft, fluffy flatbread with a generous layer of butter.",
+      price: 60,
+      category: "Breads",
+      ...findImage("naan")
+    },
+    {
+      id: "7",
+      name: "Garlic Naan",
+      description: "Flatbread flavored with garlic and herbs.",
+      price: 70,
+      category: "Breads",
+      ...findImage("naan")
+    },
+    {
+      id: "8",
+      name: "Gulab Jamun",
+      description: "Soft, spongy balls made of milk solids, soaked in sweet syrup.",
+      price: 120,
+      category: "Desserts",
+      ...findImage("gulab_jamun")
+    },
+    {
+      id: "9",
+      name: "Ras Malai",
+      description: "Chenna discs soaked in thickened, sweetened milk.",
+      price: 150,
+      category: "Desserts",
+      ...findImage("ras_malai")
+    },
+    {
+      id: "10",
+      name: "Fresh Lime Soda",
+      description: "A refreshing drink with lemon juice, soda, and a hint of spice.",
+      price: 90,
+      category: "Beverages",
+      ...findImage("lime_soda")
+    }
+  ];
 
 export const tables: Table[] = [
   { id: "T1", name: "Table 1", status: "occupied", currentOrderId: "O1" },

@@ -74,7 +74,7 @@ export function OrderStatusView({
 
     const interval = setInterval(fetchStatus, 5000); // Poll every 5 seconds
     return () => clearInterval(interval);
-  }, [order.id, order.status]);
+  }, [order.id]);
 
   const currentStatus = statusInfo[order.status];
   const StatusIcon = currentStatus.icon;

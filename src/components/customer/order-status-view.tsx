@@ -12,13 +12,11 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Clock, ChefHat, CheckCircle, Bell, Loader2,ThumbsUp } from "lucide-react";
 
 interface OrderStatusViewProps {
   order: Order;
   onPlaceNewOrder: () => void;
-  onAddMoreItems: () => void;
 }
 
 const statusInfo: Record<
@@ -53,7 +51,6 @@ const statusInfo: Record<
 export function OrderStatusView({
   order: initialOrder,
   onPlaceNewOrder,
-  onAddMoreItems,
 }: OrderStatusViewProps) {
   const [order, setOrder] = useState<Order>(initialOrder);
   const [isLoading, setIsLoading] = useState(false);
@@ -63,10 +60,14 @@ export function OrderStatusView({
   }, [initialOrder]);
 
   useEffect(() => {
-    if (order.status === 'billed' || order.status === 'closed') {
-      // The order is finalized, no need to poll.
-      // If it's closed, the reset will be handled by the logic below.
-      return;
+    // If the order is finalized, no need to poll.
+    // If it's closed, trigger the reset.
+    if (order.status === 'closed') {
+        onPlaceNewOrder();
+        return;
+    }
+    if (order.status === 'billed') {
+        return;
     }
     
     const fetchStatus = async () => {
@@ -76,10 +77,6 @@ export function OrderStatusView({
         if (response.ok) {
           const data: Order = await response.json();
           setOrder(data);
-          // If the order is now closed from the backend, trigger the reset.
-          if (data.status === 'closed') {
-             onPlaceNewOrder();
-          }
         }
       } catch (error) {
         console.error("Failed to fetch order status:", error);
@@ -90,11 +87,10 @@ export function OrderStatusView({
 
     const interval = setInterval(fetchStatus, 5000); // Poll every 5 seconds
     return () => clearInterval(interval);
-  }, [order.id, onPlaceNewOrder, order.status]);
+  }, [order.id, order.status, onPlaceNewOrder]);
 
   const currentStatus = statusInfo[order.status];
   const StatusIcon = currentStatus.icon;
-  const isOrderFinalized = order.status === 'billed' || order.status === 'closed';
 
   return (
     <Card className="shadow-lg">
@@ -136,15 +132,6 @@ export function OrderStatusView({
             <span>Total</span>
             <span>₹{order.total.toFixed(2)}</span>
         </div>
-        {!isOrderFinalized && (
-            <Button
-            variant="outline"
-            className="w-full"
-            onClick={onAddMoreItems}
-            >
-            Add More Items
-            </Button>
-        )}
       </CardFooter>
     </Card>
   );

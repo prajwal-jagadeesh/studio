@@ -17,7 +17,6 @@ export function MenuView({ menuItems }: MenuViewProps) {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
   const [placedOrder, setPlacedOrder] = useState<Order | null>(null);
-  const [isAddingItems, setIsAddingItems] = useState(false);
 
   useEffect(() => {
     async function fetchTables() {
@@ -63,23 +62,19 @@ export function MenuView({ menuItems }: MenuViewProps) {
   const handleOrderPlaced = (order: Order) => {
     setPlacedOrder(order);
     setOrderItems([]); // Clear the cart for the next order
-    setIsAddingItems(false);
   };
   
   const handleOrderUpdated = (order: Order) => {
     setPlacedOrder(order);
     setOrderItems([]);
-    setIsAddingItems(false);
   };
 
   const handlePlaceNewOrder = () => {
     setPlacedOrder(null);
-    setIsAddingItems(false);
   };
 
-  const handleAddMoreItems = () => {
-    setIsAddingItems(true);
-  }
+  // Determine if we are in the "adding more items" flow
+  const isAddingToOrder = placedOrder !== null && orderItems.length > 0;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -94,11 +89,10 @@ export function MenuView({ menuItems }: MenuViewProps) {
           <MenuTabs menuItems={menuItems} onAddToOrder={addToOrder} />
         </div>
         <div className="lg:col-span-1 sticky top-8">
-          {placedOrder && !isAddingItems ? (
+          {placedOrder && !isAddingToOrder ? (
             <OrderStatusView 
               order={placedOrder} 
               onPlaceNewOrder={handlePlaceNewOrder}
-              onAddMoreItems={handleAddMoreItems}
             />
           ) : (
             <OrderSummary

@@ -205,7 +205,7 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
                        <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <DropdownMenuItem
-                              className="text-red-600 focus:text-red-500 hover:bg-red-50 dark:focus:bg-red-900/50 dark:hover:bg-red-900/50"
+                              className="text-red-600 focus:text-red-600 hover:bg-destructive/10 dark:text-red-500 dark:focus:text-red-500"
                               onSelect={(e) => e.preventDefault()}
                             >
                               Cancel Order

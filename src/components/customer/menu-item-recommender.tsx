@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -50,7 +51,12 @@ export function MenuItemRecommender({ order, onItemsAdd }: MenuItemRecommenderPr
 
   const handleAddRecommended = () => {
     if (recommendation) {
-      onItemsAdd(recommendation.recommendedItems);
+      // The AI might return a single string with items separated by commas.
+      const recommendedItemNames = recommendation.recommendedItems.flatMap(itemStr => 
+        itemStr.split(',').map(name => name.trim())
+      );
+      
+      onItemsAdd(recommendedItemNames);
       toast({
           title: "Items Added!",
           description: "We've added the recommended items to your cart. Click 'Add to Order' to confirm."

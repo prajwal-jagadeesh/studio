@@ -220,7 +220,7 @@ export function OrderSummary({
         <CardContent>
           {items.length === 0 ? (
             <p className="text-muted-foreground text-center py-8">
-              Your cart is empty.
+              Your cart is empty. Add items from the menu.
             </p>
           ) : (
             <>

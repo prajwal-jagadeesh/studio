@@ -18,6 +18,7 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
   const [tables, setTables] = useState<Table[]>([]);
   const [placedOrder, setPlacedOrder] = useState<Order | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
+  const [viewMode, setViewMode] = useState<'order-summary' | 'order-status'>('order-summary');
   
   useEffect(() => {
     async function fetchMenuItems() {
@@ -37,6 +38,14 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
     fetchTables();
   }, []);
 
+  useEffect(() => {
+    if (placedOrder) {
+      setViewMode('order-status');
+    } else {
+      setViewMode('order-summary');
+    }
+  }, [placedOrder]);
+
   const addToOrder = (item: MenuItem) => {
     setOrderItems((prevItems) => {
       const existingItem = prevItems.find((oi) => oi.menuId === item.id);
@@ -50,6 +59,7 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
         { menuId: item.id, name: item.name, qty: 1, price: item.price },
       ];
     });
+    setViewMode('order-summary');
   };
 
   const updateQuantity = (menuId: string, quantity: number) => {
@@ -87,6 +97,7 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
   const addRecommendedItemsToOrder = (itemNames: string[]) => {
      const itemsToAdd = menuItems.filter(item => itemNames.includes(item.name));
      itemsToAdd.forEach(addToOrder);
+     setViewMode('order-summary');
   };
 
 
@@ -103,7 +114,7 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
           <MenuTabs menuItems={menuItems.filter(item => item.available)} onAddToOrder={addToOrder} />
         </div>
         <div className="lg:col-span-1 sticky top-8">
-          {placedOrder ? (
+          {viewMode === 'order-status' && placedOrder ? (
             <OrderStatusView 
               order={placedOrder} 
               onPlaceNewOrder={handlePlaceNewOrder}

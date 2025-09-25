@@ -95,9 +95,24 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
   };
   
   const addRecommendedItemsToOrder = (itemNames: string[]) => {
-     const itemsToAdd = menuItems.filter(item => itemNames.includes(item.name));
-     itemsToAdd.forEach(addToOrder);
-     setViewMode('order-summary');
+    const itemsToAdd = menuItems.filter(item => itemNames.includes(item.name));
+    
+    setOrderItems(prevItems => {
+        let newItems = [...prevItems];
+        itemsToAdd.forEach(item => {
+            const existingItem = newItems.find((oi) => oi.menuId === item.id);
+            if (existingItem) {
+                newItems = newItems.map((oi) =>
+                    oi.menuId === item.id ? { ...oi, qty: oi.qty + 1 } : oi
+                );
+            } else {
+                newItems.push({ menuId: item.id, name: item.name, qty: 1, price: item.price });
+            }
+        });
+        return newItems;
+    });
+
+    setViewMode('order-summary');
   };
 
 

@@ -39,12 +39,12 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
   }, []);
 
   useEffect(() => {
-    if (placedOrder) {
+    if (placedOrder && orderItems.length === 0) {
       setViewMode('order-status');
     } else {
       setViewMode('order-summary');
     }
-  }, [placedOrder]);
+  }, [placedOrder, orderItems]);
 
   const addToOrder = (item: MenuItem) => {
     setOrderItems((prevItems) => {

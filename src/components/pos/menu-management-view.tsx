@@ -40,7 +40,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { MoreHorizontal, PlusCircle } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Loader2 } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -60,8 +60,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "../ui/checkbox";
-import { Label } from "../ui/label";
-import { Badge } from "../ui/badge";
 
 interface MenuManagementViewProps {
   initialItems: MenuItem[];
@@ -72,7 +70,6 @@ const menuSchema = z.object({
   description: z.string().min(1, "Description is required"),
   price: z.coerce.number().positive("Price must be a positive number"),
   category: z.enum(["Starters", "Main Course", "Breads", "Desserts", "Beverages"]),
-  available: z.boolean().default(true),
 });
 
 type MenuFormValues = z.infer<typeof menuSchema>;
@@ -81,6 +78,7 @@ export function MenuManagementView({ initialItems }: MenuManagementViewProps) {
   const [items, setItems] = useState<MenuItem[]>(initialItems);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+  const [updatingItems, setUpdatingItems] = useState<string[]>([]);
   const { toast } = useToast();
 
   const categories: MenuItem['category'][] = [
@@ -98,7 +96,6 @@ export function MenuManagementView({ initialItems }: MenuManagementViewProps) {
       description: "",
       price: 0,
       category: "Starters",
-      available: true,
     },
   });
 
@@ -118,20 +115,51 @@ export function MenuManagementView({ initialItems }: MenuManagementViewProps) {
     if (item) {
       form.reset(item);
     } else {
-      form.reset({ name: "", description: "", price: 0, category: "Starters", available: true });
+      form.reset({ name: "", description: "", price: 0, category: "Starters" });
     }
     setIsDialogOpen(true);
+  };
+  
+  const handleAvailabilityChange = async (itemId: string, available: boolean) => {
+    setUpdatingItems(prev => [...prev, itemId]);
+    try {
+      const response = await fetch(`/api/menu/${itemId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ available }),
+      });
+      if (!response.ok) throw new Error("Failed to update availability.");
+      
+      const updatedItem = await response.json();
+      setItems(prevItems => prevItems.map(item => item.id === itemId ? updatedItem : item));
+      
+      toast({
+        title: "Success",
+        description: `"${updatedItem.name}" status updated.`,
+      });
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Update Failed", description: error.message });
+      // Revert UI on failure if needed, for now we just show a toast
+    } finally {
+        setUpdatingItems(prev => prev.filter(id => id !== itemId));
+    }
   };
 
   const onSubmit = async (data: MenuFormValues) => {
     const url = editingItem ? `/api/menu/${editingItem.id}` : "/api/menu";
     const method = editingItem ? "PATCH" : "POST";
 
+    // For edits, we use the existing availability status. For new items, default to true.
+    const payload = editingItem 
+      ? { ...data, available: editingItem.available }
+      : { ...data, available: true };
+
+
     try {
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -199,9 +227,23 @@ export function MenuManagementView({ initialItems }: MenuManagementViewProps) {
                             <TableCell className="font-medium">{item.name}</TableCell>
                             <TableCell>₹{item.price.toFixed(2)}</TableCell>
                             <TableCell>
-                                <Badge variant={item.available ? "default" : "destructive"}>
-                                    {item.available ? "Available" : "Unavailable"}
-                                </Badge>
+                                <div className="flex items-center space-x-2">
+                                    {updatingItems.includes(item.id) ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Checkbox
+                                            id={`available-${item.id}`}
+                                            checked={item.available}
+                                            onCheckedChange={(checked) => handleAvailabilityChange(item.id, !!checked)}
+                                        />
+                                    )}
+                                    <label
+                                        htmlFor={`available-${item.id}`}
+                                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                    >
+                                        {item.available ? "Available" : "Unavailable"}
+                                    </label>
+                                </div>
                             </TableCell>
                             <TableCell className="text-right">
                                 <DropdownMenu>
@@ -315,24 +357,6 @@ export function MenuManagementView({ initialItems }: MenuManagementViewProps) {
                         </SelectContent>
                      </Select>
                     <FormMessage />
-                  </FormItem>
-                )}
-              />
-               <FormField
-                control={form.control}
-                name="available"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                    <div className="space-y-0.5">
-                        <FormLabel>Available</FormLabel>
-                        <FormMessage />
-                    </div>
-                    <FormControl>
-                        <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                        />
-                    </FormControl>
                   </FormItem>
                 )}
               />

@@ -95,26 +95,21 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
   };
   
   const addRecommendedItemsToOrder = (itemNames: string[]) => {
-    const recommendedItemNames = itemNames.flatMap(itemStr => 
-        itemStr.split(',').map(name => name.trim())
-    );
-
-    const itemsToAdd = menuItems.filter(item => recommendedItemNames.includes(item.name));
+    const itemsToAdd = menuItems.filter(item => itemNames.includes(item.name));
     
     setOrderItems(prevItems => {
-        let newItems = [...prevItems];
+        const newItemsMap = new Map(prevItems.map(item => [item.menuId, {...item}]));
+        
         itemsToAdd.forEach(item => {
-            const existingItemIndex = newItems.findIndex((oi) => oi.menuId === item.id);
-            if (existingItemIndex > -1) {
-                newItems[existingItemIndex] = {
-                    ...newItems[existingItemIndex],
-                    qty: newItems[existingItemIndex].qty + 1,
-                };
+            if (newItemsMap.has(item.id)) {
+                const existingItem = newItemsMap.get(item.id)!;
+                existingItem.qty += 1;
             } else {
-                newItems.push({ menuId: item.id, name: item.name, qty: 1, price: item.price });
+                newItemsMap.set(item.id, { menuId: item.id, name: item.name, qty: 1, price: item.price });
             }
         });
-        return newItems;
+
+        return Array.from(newItemsMap.values());
     });
 
     setViewMode('order-summary');

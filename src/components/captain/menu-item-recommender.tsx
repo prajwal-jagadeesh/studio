@@ -1,102 +1,132 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Zap, Lightbulb } from "lucide-react";
-import { menuItemRecommendation } from "@/ai/flows/menu-item-recommendation";
-import type {
-  MenuItemRecommendationInput,
-  MenuItemRecommendationOutput,
-} from "@/ai/flows/menu-item-recommendation";
-import type { Order } from "@/lib/data";
-import { useToast } from "@/hooks/use-toast";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useState, useEffect } from "react";
+import type { Order, MenuItem } from "@/lib/data";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { Clock, ChefHat, CheckCircle, Bell, Loader2,ThumbsUp } from "lucide-react";
 
-interface MenuItemRecommenderProps {
+interface OrderStatusViewProps {
   order: Order;
-  onItemsAdd: (items: string[]) => void;
+  onPlaceNewOrder: () => void;
 }
 
-export function MenuItemRecommender({ order, onItemsAdd }: MenuItemRecommenderProps) {
-  const [loading, setLoading] = useState(false);
-  const [recommendation, setRecommendation] =
-    useState<MenuItemRecommendationOutput | null>(null);
-  const { toast } = useToast();
+const statusInfo: Record<
+  Order["status"],
+  { text: string; icon: React.ElementType; color: string }
+> = {
+  pending: {
+    text: "Pending Confirmation",
+    icon: Clock,
+    color: "bg-yellow-500",
+  },
+  confirmed: {
+    text: "Order Confirmed",
+    icon: ThumbsUp,
+    color: "bg-orange-500",
+  },
+  preparing: {
+    text: "Preparing Your Meal",
+    icon: ChefHat,
+    color: "bg-blue-500",
+  },
+  ready: { text: "Ready for Pickup", icon: Bell, color: "bg-green-500" },
+  served: {
+    text: "Order Served",
+    icon: CheckCircle,
+    color: "bg-purple-500",
+  },
+  billed: { text: "Billed", icon: CheckCircle, color: "bg-gray-500" },
+  closed: { text: "Closed", icon: CheckCircle, color: "bg-gray-700" },
+};
 
-  const handleGetRecommendation = async () => {
-    setLoading(true);
-    setRecommendation(null);
-    try {
-      const input: MenuItemRecommendationInput = {
-        currentOrderItems: order.items.map((item) => item.name),
-        customerPreferences: "Loves spicy food, prefers North Indian cuisine.",
-        orderHistory: ["Veg Seekh Kebab", "Dal Makhani"],
-      };
-      const result = await menuItemRecommendation(input);
-      setRecommendation(result);
-    } catch (error) {
-      console.error("Failed to get recommendations:", error);
-      toast({
-        variant: "destructive",
-        title: "AI Recommendation Failed",
-        description: "Could not fetch recommendations at this time.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+export function OrderStatusView({
+  order: initialOrder,
+  onPlaceNewOrder,
+}: OrderStatusViewProps) {
+  const [order, setOrder] = useState<Order>(initialOrder);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleAddRecommended = () => {
-    if (recommendation) {
-      onItemsAdd(recommendation.recommendedItems);
-      setRecommendation(null); // Clear recommendation after adding
+  useEffect(() => {
+    setOrder(initialOrder);
+  }, [initialOrder]);
+
+  useEffect(() => {
+    if (order.status === 'closed') {
+        onPlaceNewOrder();
+        return;
     }
-  };
+    
+    const fetchStatus = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(`/api/orders/${order.id}`);
+        if (response.ok) {
+          const data: Order = await response.json();
+          setOrder(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch order status:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const interval = setInterval(fetchStatus, 5000); // Poll every 5 seconds
+    return () => clearInterval(interval);
+  }, [order.id, order.status, onPlaceNewOrder]);
+
+  const currentStatus = statusInfo[order.status];
+  const StatusIcon = currentStatus.icon;
 
   return (
-    <Card className="bg-secondary mt-4">
+    <Card className="shadow-lg">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 font-headline text-secondary-foreground text-lg">
-          <Zap className="h-5 w-5 text-accent" />
-          Hungry for more?
+        <CardTitle className="flex items-center justify-between font-headline">
+          <span>Order #{order.id} for {order.tableName}</span>
+           {isLoading && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        {loading && (
-          <div className="flex items-center justify-center h-24">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        )}
-
-        {!loading && !recommendation && (
-          <div className="text-center">
-            <p className="text-muted-foreground mb-4 text-sm">
-              Get AI-powered suggestions to complement your meal.
-            </p>
-            <Button onClick={handleGetRecommendation} size="sm">
-              <Lightbulb className="mr-2 h-4 w-4" />
-              Suggest Items
-            </Button>
-          </div>
-        )}
-
-        {recommendation && (
-          <div>
-            <Alert>
-              <Lightbulb className="h-4 w-4" />
-              <AlertTitle className="font-bold">{recommendation.recommendedItems.join(", ")}</AlertTitle>
-              <AlertDescription>
-                <strong>Reasoning:</strong> {recommendation.reasoning}
-              </AlertDescription>
-            </Alert>
-            <Button onClick={handleAddRecommended} className="w-full mt-4">
-                Add to Order
-            </Button>
-          </div>
-
-        )}
+      <CardContent className="space-y-4">
+        <div>
+          <h4 className="font-semibold mb-2">Status</h4>
+          <Badge
+            variant="secondary"
+            className="text-white text-sm w-full justify-center capitalize"
+            style={{ backgroundColor: `hsl(${currentStatus.color.replace('bg-', '')})` }}
+          >
+            <StatusIcon className="mr-2 h-4 w-4" />
+            {currentStatus.text}
+          </Badge>
+        </div>
+        <Separator />
+        <div>
+            <h4 className="font-semibold mb-2">Items</h4>
+            <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
+                {order.items.map((item) => (
+                    <div key={item.menuId} className="flex justify-between text-sm">
+                        <span>{item.name} x {item.qty}</span>
+                        <span>₹{(item.price * item.qty).toFixed(2)}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+        
       </CardContent>
+      <CardFooter className="flex flex-col gap-4">
+         <Separator />
+         <div className="w-full flex justify-between font-bold text-lg">
+            <span>Total</span>
+            <span>₹{order.total.toFixed(2)}</span>
+        </div>
+      </CardFooter>
     </Card>
   );
 }

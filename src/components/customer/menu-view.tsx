@@ -41,7 +41,7 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
   useEffect(() => {
     if (placedOrder && orderItems.length === 0) {
       setViewMode('order-status');
-    } else {
+    } else if (!placedOrder) {
       setViewMode('order-summary');
     }
   }, [placedOrder, orderItems]);
@@ -82,36 +82,18 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
 
   const handleOrderPlaced = (order: Order) => {
     setPlacedOrder(order);
-    setOrderItems([]); // Clear the cart for the next order
+    setOrderItems([]); 
+    setViewMode('order-status');
   };
   
   const handleOrderUpdated = (order: Order) => {
     setPlacedOrder(order);
     setOrderItems([]);
+    setViewMode('order-status');
   };
 
   const handlePlaceNewOrder = () => {
     setPlacedOrder(null);
-  };
-  
-  const addRecommendedItemsToOrder = (itemNames: string[]) => {
-    const itemsToAdd = menuItems.filter(item => itemNames.includes(item.name));
-    
-    setOrderItems(prevItems => {
-        const newItemsMap = new Map(prevItems.map(item => [item.menuId, {...item}]));
-        
-        itemsToAdd.forEach(item => {
-            if (newItemsMap.has(item.id)) {
-                const existingItem = newItemsMap.get(item.id)!;
-                existingItem.qty += 1;
-            } else {
-                newItemsMap.set(item.id, { menuId: item.id, name: item.name, qty: 1, price: item.price });
-            }
-        });
-
-        return Array.from(newItemsMap.values());
-    });
-
     setViewMode('order-summary');
   };
 
@@ -133,8 +115,6 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
             <OrderStatusView 
               order={placedOrder} 
               onPlaceNewOrder={handlePlaceNewOrder}
-              onAddRecommendedItems={addRecommendedItemsToOrder}
-              allMenuItems={menuItems}
             />
           ) : (
              <OrderSummary

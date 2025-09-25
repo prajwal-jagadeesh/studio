@@ -13,13 +13,10 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Clock, ChefHat, CheckCircle, Bell, Loader2,ThumbsUp } from "lucide-react";
-import { MenuItemRecommender } from "./menu-item-recommender";
 
 interface OrderStatusViewProps {
   order: Order;
   onPlaceNewOrder: () => void;
-  onAddRecommendedItems: (itemNames: string[]) => void;
-  allMenuItems: MenuItem[];
 }
 
 const statusInfo: Record<
@@ -54,8 +51,6 @@ const statusInfo: Record<
 export function OrderStatusView({
   order: initialOrder,
   onPlaceNewOrder,
-  onAddRecommendedItems,
-  allMenuItems
 }: OrderStatusViewProps) {
   const [order, setOrder] = useState<Order>(initialOrder);
   const [isLoading, setIsLoading] = useState(false);
@@ -91,9 +86,6 @@ export function OrderStatusView({
 
   const currentStatus = statusInfo[order.status];
   const StatusIcon = currentStatus.icon;
-
-  const isOrderActive = order.status !== 'billed' && order.status !== 'closed';
-
 
   return (
     <Card className="shadow-lg">
@@ -135,12 +127,6 @@ export function OrderStatusView({
             <span>Total</span>
             <span>₹{order.total.toFixed(2)}</span>
         </div>
-        {isOrderActive && (
-          <MenuItemRecommender 
-            order={order} 
-            onItemsAdd={onAddRecommendedItems} 
-          />
-        )}
       </CardFooter>
     </Card>
   );

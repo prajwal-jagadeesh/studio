@@ -95,16 +95,21 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
   };
   
   const addRecommendedItemsToOrder = (itemNames: string[]) => {
-    const itemsToAdd = menuItems.filter(item => itemNames.includes(item.name));
+    const recommendedItemNames = itemNames.flatMap(itemStr => 
+        itemStr.split(',').map(name => name.trim())
+    );
+
+    const itemsToAdd = menuItems.filter(item => recommendedItemNames.includes(item.name));
     
     setOrderItems(prevItems => {
         let newItems = [...prevItems];
         itemsToAdd.forEach(item => {
-            const existingItem = newItems.find((oi) => oi.menuId === item.id);
-            if (existingItem) {
-                newItems = newItems.map((oi) =>
-                    oi.menuId === item.id ? { ...oi, qty: oi.qty + 1 } : oi
-                );
+            const existingItemIndex = newItems.findIndex((oi) => oi.menuId === item.id);
+            if (existingItemIndex > -1) {
+                newItems[existingItemIndex] = {
+                    ...newItems[existingItemIndex],
+                    qty: newItems[existingItemIndex].qty + 1,
+                };
             } else {
                 newItems.push({ menuId: item.id, name: item.name, qty: 1, price: item.price });
             }

@@ -55,7 +55,6 @@ export function OrderSummary({
   activeOrder
 }: OrderSummaryProps) {
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("Order Placed Successfully!");
@@ -66,7 +65,6 @@ export function OrderSummary({
 
   const handlePlaceOrUpdateOrder = async () => {
     setIsLoading(true);
-    setIsConfirmOpen(false); // Close confirmation dialog if it was open
 
     if (activeOrder) {
       // Update existing order
@@ -153,12 +151,10 @@ export function OrderSummary({
     setSelectedTableId(null);
   }
   
-  const displayTableName = activeOrder ? activeOrder.tableName : tables.find(t => t.id === selectedTableId)?.name;
   const isTableSelectionDisabled = !!activeOrder;
 
   const renderPlaceOrderButton = () => {
     if (activeOrder) {
-      // This is an incremental order. No confirmation needed.
       return (
         <Button
           className="w-full"
@@ -173,7 +169,7 @@ export function OrderSummary({
 
     // This is a new order, so we show the confirmation dialog.
     return (
-      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+      <AlertDialog>
         <AlertDialogTrigger asChild>
           <Button
             className="w-full"
@@ -187,7 +183,7 @@ export function OrderSummary({
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Your Order</AlertDialogTitle>
             <AlertDialogDescription>
-              This will place an order for table {displayTableName} with a total of ₹{total.toFixed(2)}. Are you sure?
+              This will place an order for table {tables.find(t => t.id === selectedTableId)?.name} with a total of ₹{total.toFixed(2)}. Are you sure?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="max-h-60 overflow-y-auto text-sm">

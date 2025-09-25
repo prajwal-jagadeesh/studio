@@ -26,7 +26,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Loader2 } from "lucide-react";
-import { MenuItemRecommender } from "./menu-item-recommender";
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
 
@@ -199,28 +198,23 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
       </div>
 
       {selectedOrder && (
-         <DialogContent className="sm:max-w-2xl">
+         <DialogContent className="sm:max-w-lg">
          <DialogHeader>
            <DialogTitle className="font-headline text-2xl text-primary">Order {selectedOrder.id} - {selectedOrder.tableName}</DialogTitle>
          </DialogHeader>
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
-            <div>
-                <h4 className="font-semibold mb-2">Items</h4>
-                <ul>
-                    {selectedOrder.items.map(item => (
-                        <li key={item.menuId} className="flex justify-between">
-                            <span>{item.name} x {item.qty}</span>
-                            <span>₹{(item.price * item.qty).toFixed(2)}</span>
-                        </li>
-                    ))}
-                </ul>
-                <div className="border-t mt-2 pt-2 flex justify-between font-bold">
-                    <span>Total</span>
-                    <span>₹{selectedOrder.total.toFixed(2)}</span>
-                </div>
-            </div>
-            <div>
-                <MenuItemRecommender order={selectedOrder} allMenuItems={menuItems} />
+         <div className="py-4">
+            <h4 className="font-semibold mb-2">Items</h4>
+            <ul>
+                {selectedOrder.items.map(item => (
+                    <li key={item.menuId} className="flex justify-between">
+                        <span>{item.name} x {item.qty}</span>
+                        <span>₹{(item.price * item.qty).toFixed(2)}</span>
+                    </li>
+                ))}
+            </ul>
+            <div className="border-t mt-2 pt-2 flex justify-between font-bold">
+                <span>Total</span>
+                <span>₹{selectedOrder.total.toFixed(2)}</span>
             </div>
          </div>
        </DialogContent>

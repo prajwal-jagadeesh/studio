@@ -83,8 +83,12 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
   const handlePlaceNewOrder = () => {
     setPlacedOrder(null);
   };
+  
+  const addRecommendedItemsToOrder = (itemNames: string[]) => {
+     const itemsToAdd = menuItems.filter(item => itemNames.includes(item.name));
+     itemsToAdd.forEach(addToOrder);
+  };
 
-  const shouldShowOrderSummary = orderItems.length > 0;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -99,20 +103,12 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
           <MenuTabs menuItems={menuItems.filter(item => item.available)} onAddToOrder={addToOrder} />
         </div>
         <div className="lg:col-span-1 sticky top-8">
-          {shouldShowOrderSummary ? (
-             <OrderSummary
-              items={orderItems}
-              tables={tables}
-              onUpdateQuantity={updateQuantity}
-              onClearOrder={clearOrder}
-              onOrderPlaced={handleOrderPlaced}
-              onOrderUpdated={handleOrderUpdated}
-              activeOrder={placedOrder}
-            />
-          ) : placedOrder ? (
+          {placedOrder ? (
             <OrderStatusView 
               order={placedOrder} 
               onPlaceNewOrder={handlePlaceNewOrder}
+              onAddRecommendedItems={addRecommendedItemsToOrder}
+              allMenuItems={menuItems}
             />
           ) : (
              <OrderSummary

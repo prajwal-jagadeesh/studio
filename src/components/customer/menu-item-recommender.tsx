@@ -30,6 +30,7 @@ export function MenuItemRecommender({ order, onItemsAdd }: MenuItemRecommenderPr
     try {
       const input: MenuItemRecommendationInput = {
         currentOrderItems: order.items.map((item) => item.name),
+        // In a real app, these would be populated with actual customer data
         customerPreferences: "Loves spicy food, prefers North Indian cuisine.",
         orderHistory: ["Veg Seekh Kebab", "Dal Makhani"],
       };
@@ -50,6 +51,10 @@ export function MenuItemRecommender({ order, onItemsAdd }: MenuItemRecommenderPr
   const handleAddRecommended = () => {
     if (recommendation) {
       onItemsAdd(recommendation.recommendedItems);
+      toast({
+          title: "Items Added!",
+          description: "We've added the recommended items to your cart. Click 'Add to Order' to confirm."
+      })
       setRecommendation(null); // Clear recommendation after adding
     }
   };
@@ -91,7 +96,7 @@ export function MenuItemRecommender({ order, onItemsAdd }: MenuItemRecommenderPr
               </AlertDescription>
             </Alert>
             <Button onClick={handleAddRecommended} className="w-full mt-4">
-                Add to Order
+                Add to Cart
             </Button>
           </div>
 

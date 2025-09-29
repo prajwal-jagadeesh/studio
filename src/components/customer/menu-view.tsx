@@ -8,8 +8,9 @@ import { OrderSummary } from "./order-summary";
 import { OrderStatusView } from "./order-status-view";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, QrCode } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 
 interface MenuViewProps {
@@ -99,6 +100,20 @@ export function MenuView({ menuItems: initialMenuItems, table }: MenuViewProps) 
 
   const totalItemsInCart = orderItems.reduce((acc, item) => acc + item.qty, 0);
   const showOrderStatus = !!placedOrder && !isAddingItems;
+  
+  if (!table) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Alert variant="destructive" className="max-w-md">
+          <QrCode className="h-4 w-4" />
+          <AlertTitle>Invalid Table QR Code</AlertTitle>
+          <AlertDescription>
+            The table could not be identified. Please scan a valid QR code from a table to begin your order.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
 
   return (

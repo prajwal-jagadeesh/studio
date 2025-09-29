@@ -28,51 +28,55 @@ export const BillPreview = React.forwardRef<HTMLDivElement, BillPreviewProps>(
     return (
       <div ref={ref} className="p-4 font-code text-sm text-black bg-white">
         <div className="text-center mb-4">
-          <h2 className="text-xl font-bold font-headline">{restaurantName}</h2>
-          <p>Tax Invoice</p>
+          <h2 className="text-2xl font-bold font-headline">{restaurantName}</h2>
+          <p className="text-xs">Tax Invoice</p>
         </div>
-        <p>Order: {order.id}</p>
-        <p>Table: {order.tableName}</p>
-        <p>Date: {new Date().toLocaleString()}</p>
+        <div className="flex justify-between text-xs mb-2">
+            <span>Order: {order.id}</span>
+            <span>Table: {order.tableName}</span>
+        </div>
+        <div className="text-xs mb-2">
+            Date: {new Date().toLocaleString()}
+        </div>
         <hr className="my-2 border-dashed border-black" />
-        <table className="w-full">
+        <table className="w-full text-xs">
           <thead>
-            <tr>
-              <th className="text-left">ITEM</th>
-              <th className="text-center">QTY</th>
-              <th className="text-right">PRICE</th>
-              <th className="text-right">TOTAL</th>
+            <tr className="border-b border-dashed border-black">
+              <th className="text-left pb-1">ITEM</th>
+              <th className="text-center pb-1">QTY</th>
+              <th className="text-right pb-1">PRICE</th>
+              <th className="text-right pb-1">TOTAL</th>
             </tr>
           </thead>
           <tbody>
             {order.items.map((item) => (
               <tr key={item.menuId}>
-                <td>{item.name}</td>
-                <td className="text-center">{item.qty}</td>
-                <td className="text-right">{item.price.toFixed(2)}</td>
-                <td className="text-right">{(item.price * item.qty).toFixed(2)}</td>
+                <td className="pt-1">{item.name}</td>
+                <td className="text-center pt-1">{item.qty}</td>
+                <td className="text-right pt-1">{item.price.toFixed(2)}</td>
+                <td className="text-right pt-1">{(item.price * item.qty).toFixed(2)}</td>
               </tr>
             ))}
           </tbody>
         </table>
         <hr className="my-2 border-dashed border-black" />
-        <table className="w-full">
-            <tbody>
-                <tr>
-                    <td className="text-right">Subtotal:</td>
-                    <td className="text-right">{subtotal.toFixed(2)}</td>
-                </tr>
-                <tr>
-                    <td className="text-right">GST (5%):</td>
-                    <td className="text-right">{gst.toFixed(2)}</td>
-                </tr>
-            </tbody>
-        </table>
-        <hr className="my-2 border-dashed border-black" />
-        <div className="text-right font-bold text-lg">
-            <p>TOTAL: ₹{total.toFixed(2)}</p>
+        <div className="space-y-1 text-xs">
+            <div className="flex justify-between">
+                <span className="font-semibold">Subtotal:</span>
+                <span>{subtotal.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+                <span className="font-semibold">GST (5%):</span>
+                <span>{gst.toFixed(2)}</span>
+            </div>
         </div>
-        <div className="text-center mt-4">
+        <hr className="my-2 border-dashed border-black" />
+        <div className="flex justify-between items-center font-bold text-base">
+            <span>TOTAL:</span>
+            <span>₹{total.toFixed(2)}</span>
+        </div>
+         <hr className="my-2 border-dashed border-black" />
+        <div className="text-center mt-4 text-xs">
             <p>{billFooter}</p>
         </div>
       </div>

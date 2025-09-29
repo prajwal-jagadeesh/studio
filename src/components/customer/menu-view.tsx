@@ -14,11 +14,11 @@ import { Badge } from "@/components/ui/badge";
 
 interface MenuViewProps {
   menuItems: MenuItem[];
+  table: Table;
 }
 
-export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
+export function MenuView({ menuItems: initialMenuItems, table }: MenuViewProps) {
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
-  const [tables, setTables] = useState<Table[]>([]);
   const [placedOrder, setPlacedOrder] = useState<Order | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -33,18 +33,6 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
     const menuInterval = setInterval(fetchMenuItems, 5000);
     return () => clearInterval(menuInterval);
   }, []);
-
-  useEffect(() => {
-    async function fetchTables() {
-      const response = await fetch('/api/tables');
-      const data = await response.json();
-      setTables(data);
-    }
-    fetchTables();
-    const tableInterval = setInterval(fetchTables, 5000);
-    return () => clearInterval(tableInterval);
-  }, []);
-
 
   const addToOrder = (item: MenuItem) => {
     setOrderItems((prevItems) => {
@@ -118,7 +106,7 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
       <header className="text-center mb-8">
         <h1 className="font-headline text-4xl font-bold text-primary">Our Menu</h1>
         <p className="text-muted-foreground mt-2">
-          Explore our delicious multi-cuisine vegetarian dishes.
+          Welcome to Table <span className="font-bold text-foreground">{table.name}</span>. Explore our delicious multi-cuisine vegetarian dishes.
         </p>
       </header>
       
@@ -145,7 +133,7 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
         <SheetContent className="flex flex-col">
           <SheetHeader>
             <SheetTitle className="font-headline text-2xl text-primary">
-              {showOrderStatus ? "Order Status" : (isAddingItems ? "Add Items" : "Your Order")}
+              {showOrderStatus ? "Order Status" : (isAddingItems ? `Add Items to ${table.name}` : `Your Order for ${table.name}`)}
             </SheetTitle>
           </SheetHeader>
           <div className="flex-grow overflow-y-auto">
@@ -158,7 +146,7 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
             ) : (
               <OrderSummary
                 items={orderItems}
-                tables={tables}
+                table={table}
                 onUpdateQuantity={updateQuantity}
                 onClearOrder={clearOrder}
                 onOrderPlaced={handleOrderPlaced}

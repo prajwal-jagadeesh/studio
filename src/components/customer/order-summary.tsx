@@ -37,7 +37,7 @@ import { Label } from "../ui/label";
 
 interface OrderSummaryProps {
   items: OrderItem[];
-  tables: Table[];
+  table: Table;
   onUpdateQuantity: (menuId: string, quantity: number) => void;
   onClearOrder: () => void;
   onOrderPlaced: (order: Order) => void;
@@ -48,7 +48,7 @@ interface OrderSummaryProps {
 
 export function OrderSummary({
   items,
-  tables,
+  table,
   onUpdateQuantity,
   onClearOrder,
   onOrderPlaced,
@@ -56,7 +56,6 @@ export function OrderSummary({
   activeOrder,
   onBackToStatus
 }: OrderSummaryProps) {
-  const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("Order Placed Successfully!");
@@ -98,7 +97,7 @@ export function OrderSummary({
 
     } else {
       // Place new order
-      if (!selectedTableId) {
+      if (!table) {
         toast({
           variant: "destructive",
           title: "No Table Selected",
@@ -108,12 +107,9 @@ export function OrderSummary({
         return;
       }
       try {
-        const selectedTable = tables.find((t) => t.id === selectedTableId);
-        if (!selectedTable) throw new Error("Selected table not found");
-        
         const orderDetails = {
-          tableId: selectedTable.id,
-          tableName: selectedTable.name,
+          tableId: table.id,
+          tableName: table.name,
         };
 
         const response = await fetch("/api/orders", {
@@ -150,10 +146,7 @@ export function OrderSummary({
             onOrderPlaced(updatedOrderDetails);
         }
     }
-    setSelectedTableId(null);
   }
-  
-  const isTableSelectionDisabled = !!activeOrder;
 
   const renderPlaceOrderButton = () => {
     if (activeOrder) {
@@ -176,7 +169,7 @@ export function OrderSummary({
           <Button
             className="w-full"
             size="lg"
-            disabled={isLoading || !selectedTableId || items.length === 0}
+            disabled={isLoading || !table || items.length === 0}
           >
             {isLoading ? <Loader2 className="animate-spin" /> : "Place Order"}
           </Button>
@@ -185,7 +178,7 @@ export function OrderSummary({
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Your Order</AlertDialogTitle>
             <AlertDialogDescription>
-              This will place an order for table {tables.find(t => t.id === selectedTableId)?.name} with a total of ₹{total.toFixed(2)}. Are you sure?
+              This will place an order for table {table?.name} with a total of ₹{total.toFixed(2)}. Are you sure?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="max-h-60 overflow-y-auto text-sm">
@@ -225,33 +218,6 @@ export function OrderSummary({
           </p>
         ) : (
           <div className="space-y-4 flex-grow">
-            <div className="space-y-2 mb-4 px-1">
-              <Label htmlFor="table-select">Select Table</Label>
-              <Select
-                value={activeOrder ? activeOrder.tableId : (selectedTableId ?? "")}
-                onValueChange={setSelectedTableId}
-                disabled={isTableSelectionDisabled}
-              >
-                <SelectTrigger id="table-select">
-                  <SelectValue placeholder="Choose a table" />
-                </SelectTrigger>
-                <SelectContent>
-                  {isTableSelectionDisabled && activeOrder ? (
-                      <SelectItem key={activeOrder.tableId} value={activeOrder.tableId}>
-                          {activeOrder.tableName}
-                      </SelectItem>
-                  ) : (
-                      tables
-                      .filter((t) => t.status === "available")
-                      .map((table) => (
-                          <SelectItem key={table.id} value={table.id}>
-                          {table.name}
-                          </SelectItem>
-                      ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
             <div className="space-y-4 max-h-96 overflow-y-auto px-1">
               {items.map((item) => (
                 <div key={item.menuId} className="flex items-center gap-4">

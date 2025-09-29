@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import type { MenuItem, OrderItem, Table, Order } from "@/lib/data";
 import { MenuTabs } from "./menu-tabs";
 import { OrderSummary } from "./order-summary";
-import { getTables } from "@/services/get-tables";
 import { OrderStatusView } from "./order-status-view";
 
 
@@ -26,16 +25,19 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
         const data = await response.json();
         setMenuItems(data);
     }
-    const interval = setInterval(fetchMenuItems, 5000);
-    return () => clearInterval(interval);
+    const menuInterval = setInterval(fetchMenuItems, 5000);
+    return () => clearInterval(menuInterval);
   }, []);
 
   useEffect(() => {
     async function fetchTables() {
-      const fetchedTables = await getTables();
-      setTables(fetchedTables);
+      const response = await fetch('/api/tables');
+      const data = await response.json();
+      setTables(data);
     }
     fetchTables();
+    const tableInterval = setInterval(fetchTables, 5000);
+    return () => clearInterval(tableInterval);
   }, []);
 
   useEffect(() => {

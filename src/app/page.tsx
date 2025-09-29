@@ -1,7 +1,6 @@
 import { LocationVerifier } from "@/components/customer/location-verifier";
 import { MenuView } from "@/components/customer/menu-view";
 import { getMenuItems } from "@/services/get-menu";
-import { getTables } from "@/services/get-tables";
 
 export default async function MenuPage() {
   const menuItems = await getMenuItems();

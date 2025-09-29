@@ -60,6 +60,9 @@ const statusStyles = {
   },
 };
 
+const PRINT_WIDTH_KEY = "print-width-setting";
+const DEFAULT_PRINT_WIDTH = "80mm";
+
 export function TableGrid() {
   const [tables, setTables] = useState<Table[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -76,6 +79,12 @@ export function TableGrid() {
   const kotPrintRef = useRef<HTMLDivElement>(null);
   const billPrintRef = useRef<HTMLDivElement>(null);
   const isInitialLoad = useRef(true);
+
+  // Set print width from local storage on component mount
+  useEffect(() => {
+    const savedWidth = localStorage.getItem(PRINT_WIDTH_KEY) || DEFAULT_PRINT_WIDTH;
+    document.documentElement.style.setProperty('--print-width', savedWidth);
+  }, []);
 
   const fetchData = async () => {
     if (isInitialLoad.current) {

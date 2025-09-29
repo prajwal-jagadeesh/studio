@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart, Utensils, LayoutGrid, BookMarked } from "lucide-react";
+import { BarChart, Utensils, LayoutGrid, BookMarked, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarProvider,
@@ -24,6 +24,7 @@ export default function PosLayout({
 }) {
   const pathname = usePathname();
   const isActive = (path: string) => pathname === path;
+  const isSettingsActive = (path: string) => pathname.startsWith(path);
 
   return (
     <SidebarProvider>
@@ -73,6 +74,18 @@ export default function PosLayout({
                 <Link href="/pos/analytics">
                   <BarChart />
                   <span>Analytics</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={isSettingsActive("/pos/settings")}
+                tooltip="Settings"
+              >
+                <Link href="/pos/settings">
+                  <Settings />
+                  <span>Settings</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

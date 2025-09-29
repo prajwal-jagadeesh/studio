@@ -15,7 +15,7 @@
     position: absolute;
     left: 0;
     top: 0;
-    width: 100%;
+    width: var(--print-width, 100%);
   }
 
   .non-printable {

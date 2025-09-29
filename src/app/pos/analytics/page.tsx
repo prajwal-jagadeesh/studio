@@ -1,16 +1,33 @@
+
+"use client";
+
+import { useState, useEffect } from "react";
 import { AnalyticsView } from "@/components/pos/analytics-view";
-import { analyticsData } from "@/lib/data";
+import { orders as allOrders, menuItems } from "@/lib/data";
+import type { Order, MenuItem } from "@/lib/data";
 
 export default function AnalyticsPage() {
-  const totalRevenue = analyticsData.reduce((sum, day) => sum + day.revenue, 0);
-  const totalOrders = analyticsData.reduce((sum, day) => sum + day.totalOrders, 0);
-  const avgOrderValue = totalRevenue / totalOrders;
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const stats = {
-    totalRevenue,
-    totalOrders,
-    avgOrderValue,
-  };
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/orders');
+        if (!response.ok) {
+          throw new Error('Failed to fetch orders');
+        }
+        const data = await response.json();
+        setOrders(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchOrders();
+  }, []);
   
   return (
      <div>
@@ -22,7 +39,7 @@ export default function AnalyticsPage() {
           Review your restaurant's performance metrics.
         </p>
       </header>
-      <AnalyticsView stats={stats} chartData={analyticsData} />
+      <AnalyticsView allOrders={orders} menuItems={menuItems} isLoading={isLoading} />
     </div>
   );
 }

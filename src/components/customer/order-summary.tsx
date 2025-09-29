@@ -210,90 +210,82 @@ export function OrderSummary({
 
   return (
     <>
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 font-headline">
-            <ShoppingCart className="h-6 w-6 text-primary" />
-            {activeOrder ? `Adding to Order #${activeOrder.id}`: "Your Order"}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {items.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
-              Your cart is empty. Add items from the menu.
-            </p>
-          ) : (
-            <>
-              <div className="space-y-2 mb-4">
-                <Label htmlFor="table-select">Select Table</Label>
-                <Select
-                  value={activeOrder ? activeOrder.tableId : (selectedTableId ?? "")}
-                  onValueChange={setSelectedTableId}
-                  disabled={isTableSelectionDisabled}
-                >
-                  <SelectTrigger id="table-select">
-                    <SelectValue placeholder="Choose a table" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {isTableSelectionDisabled && activeOrder ? (
-                        <SelectItem key={activeOrder.tableId} value={activeOrder.tableId}>
-                            {activeOrder.tableName}
-                        </SelectItem>
-                    ) : (
-                        tables
-                        .filter((t) => t.status === "available")
-                        .map((table) => (
-                            <SelectItem key={table.id} value={table.id}>
-                            {table.name}
-                            </SelectItem>
-                        ))
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-4 max-h-60 overflow-y-auto pr-2">
-                {items.map((item) => (
-                  <div key={item.menuId} className="flex items-center gap-4">
-                    <div className="flex-grow">
-                      <p className="font-semibold">{item.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        ₹{item.price}
-                      </p>
-                    </div>
-                    <Input
-                      type="number"
-                      value={item.qty}
-                      onChange={(e) =>
-                        onUpdateQuantity(item.menuId, parseInt(e.target.value))
-                      }
-                      className="w-16 h-8 text-center"
-                      min="0"
-                    />
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </CardContent>
-        {items.length > 0 && (
-          <CardFooter className="flex flex-col gap-4">
-            <Separator />
-            <div className="w-full flex justify-between font-bold text-lg">
-              <span>Total</span>
-              <span>₹{total.toFixed(2)}</span>
+      <div className="pt-4">
+        {items.length === 0 ? (
+          <p className="text-muted-foreground text-center py-8">
+            Your cart is empty. Add items from the menu.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            <div className="space-y-2 mb-4 px-1">
+              <Label htmlFor="table-select">Select Table</Label>
+              <Select
+                value={activeOrder ? activeOrder.tableId : (selectedTableId ?? "")}
+                onValueChange={setSelectedTableId}
+                disabled={isTableSelectionDisabled}
+              >
+                <SelectTrigger id="table-select">
+                  <SelectValue placeholder="Choose a table" />
+                </SelectTrigger>
+                <SelectContent>
+                  {isTableSelectionDisabled && activeOrder ? (
+                      <SelectItem key={activeOrder.tableId} value={activeOrder.tableId}>
+                          {activeOrder.tableName}
+                      </SelectItem>
+                  ) : (
+                      tables
+                      .filter((t) => t.status === "available")
+                      .map((table) => (
+                          <SelectItem key={table.id} value={table.id}>
+                          {table.name}
+                          </SelectItem>
+                      ))
+                  )}
+                </SelectContent>
+              </Select>
             </div>
-            {renderPlaceOrderButton()}
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={onClearOrder}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Clear Order
-            </Button>
-          </CardFooter>
+            <div className="space-y-4 max-h-96 overflow-y-auto px-1">
+              {items.map((item) => (
+                <div key={item.menuId} className="flex items-center gap-4">
+                  <div className="flex-grow">
+                    <p className="font-semibold">{item.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      ₹{item.price}
+                    </p>
+                  </div>
+                  <Input
+                    type="number"
+                    value={item.qty}
+                    onChange={(e) =>
+                      onUpdateQuantity(item.menuId, parseInt(e.target.value))
+                    }
+                    className="w-16 h-8 text-center"
+                    min="0"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
         )}
-      </Card>
+      </div>
+      {items.length > 0 && (
+        <div className="mt-auto pt-4 space-y-4">
+          <Separator />
+          <div className="w-full flex justify-between font-bold text-lg px-1">
+            <span>Total</span>
+            <span>₹{total.toFixed(2)}</span>
+          </div>
+          {renderPlaceOrderButton()}
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={onClearOrder}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Clear Order
+          </Button>
+        </div>
+      )}
 
       <AlertDialog open={isSuccessOpen} onOpenChange={setIsSuccessOpen}>
         <AlertDialogContent>
@@ -314,3 +306,4 @@ export function OrderSummary({
     </>
   );
 }
+

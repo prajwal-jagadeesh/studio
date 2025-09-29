@@ -13,6 +13,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Clock, ChefHat, CheckCircle, Bell, Loader2,ThumbsUp } from "lucide-react";
+import { Button } from "../ui/button";
 
 interface OrderStatusViewProps {
   order: Order;
@@ -88,14 +89,12 @@ export function OrderStatusView({
   const StatusIcon = currentStatus.icon;
 
   return (
-    <Card className="shadow-lg">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between font-headline">
+    <div className="pt-4 flex flex-col h-full">
+      <div className="flex-grow space-y-4">
+        <div className="flex items-center justify-between font-headline">
           <span>Order #{order.id} for {order.tableName}</span>
            {isLoading && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </div>
         <div>
           <h4 className="font-semibold mb-2">Status</h4>
           <Badge
@@ -110,7 +109,7 @@ export function OrderStatusView({
         <Separator />
         <div>
             <h4 className="font-semibold mb-2">Items</h4>
-            <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
+            <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
                 {order.items.map((item) => (
                     <div key={item.menuId} className="flex justify-between text-sm">
                         <span>{item.name} x {item.qty}</span>
@@ -120,14 +119,20 @@ export function OrderStatusView({
             </div>
         </div>
         
-      </CardContent>
-      <CardFooter className="flex flex-col gap-4">
+      </div>
+      <div className="mt-auto space-y-4 pt-4">
          <Separator />
          <div className="w-full flex justify-between font-bold text-lg">
             <span>Total</span>
             <span>₹{order.total.toFixed(2)}</span>
         </div>
-      </CardFooter>
-    </Card>
+        <Button 
+            className="w-full"
+            onClick={onPlaceNewOrder}
+        >
+            Place New Order
+        </Button>
+      </div>
+    </div>
   );
 }

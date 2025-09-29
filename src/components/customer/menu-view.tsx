@@ -6,6 +6,10 @@ import type { MenuItem, OrderItem, Table, Order } from "@/lib/data";
 import { MenuTabs } from "./menu-tabs";
 import { OrderSummary } from "./order-summary";
 import { OrderStatusView } from "./order-status-view";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { ShoppingCart } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 
 interface MenuViewProps {
@@ -17,7 +21,7 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
   const [tables, setTables] = useState<Table[]>([]);
   const [placedOrder, setPlacedOrder] = useState<Order | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
-  const [viewMode, setViewMode] = useState<'order-summary' | 'order-status'>('order-summary');
+  const [isCartOpen, setIsCartOpen] = useState(false);
   
   useEffect(() => {
     async function fetchMenuItems() {
@@ -40,13 +44,6 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
     return () => clearInterval(tableInterval);
   }, []);
 
-  useEffect(() => {
-    if (placedOrder && orderItems.length === 0) {
-      setViewMode('order-status');
-    } else if (!placedOrder) {
-      setViewMode('order-summary');
-    }
-  }, [placedOrder, orderItems]);
 
   const addToOrder = (item: MenuItem) => {
     setOrderItems((prevItems) => {
@@ -61,7 +58,6 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
         { menuId: item.id, name: item.name, qty: 1, price: item.price },
       ];
     });
-    setViewMode('order-summary');
   };
 
   const updateQuantity = (menuId: string, quantity: number) => {
@@ -85,19 +81,22 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
   const handleOrderPlaced = (order: Order) => {
     setPlacedOrder(order);
     setOrderItems([]); 
-    setViewMode('order-status');
+    setIsCartOpen(true);
   };
   
   const handleOrderUpdated = (order: Order) => {
     setPlacedOrder(order);
     setOrderItems([]);
-    setViewMode('order-status');
+    setIsCartOpen(true);
   };
 
   const handlePlaceNewOrder = () => {
     setPlacedOrder(null);
-    setViewMode('order-summary');
+    setIsCartOpen(false);
   };
+
+  const totalItemsInCart = orderItems.reduce((acc, item) => acc + item.qty, 0);
+  const showOrderStatus = !!placedOrder;
 
 
   return (
@@ -108,29 +107,53 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
           Explore our delicious multi-cuisine vegetarian dishes.
         </p>
       </header>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        <div className="lg:col-span-2">
-          <MenuTabs menuItems={menuItems.filter(item => item.available)} onAddToOrder={addToOrder} />
-        </div>
-        <div className="lg:col-span-1 sticky top-8">
-          {viewMode === 'order-status' && placedOrder ? (
-            <OrderStatusView 
-              order={placedOrder} 
-              onPlaceNewOrder={handlePlaceNewOrder}
-            />
-          ) : (
-             <OrderSummary
-              items={orderItems}
-              tables={tables}
-              onUpdateQuantity={updateQuantity}
-              onClearOrder={clearOrder}
-              onOrderPlaced={handleOrderPlaced}
-              onOrderUpdated={handleOrderUpdated}
-              activeOrder={placedOrder}
-            />
-          )}
-        </div>
-      </div>
+      
+      <MenuTabs menuItems={menuItems.filter(item => item.available)} onAddToOrder={addToOrder} />
+      
+      <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
+        <SheetTrigger asChild>
+          <Button
+            className="fixed bottom-8 right-8 h-16 w-16 rounded-full shadow-lg"
+            size="icon"
+          >
+            <ShoppingCart className="h-8 w-8" />
+            {totalItemsInCart > 0 && !showOrderStatus && (
+              <Badge className="absolute -top-2 -right-2">
+                {totalItemsInCart}
+              </Badge>
+            )}
+            {showOrderStatus && (
+                 <Badge variant="destructive" className="absolute -top-2 -right-2 animate-pulse">!</Badge>
+            )}
+            <span className="sr-only">Open Cart</span>
+          </Button>
+        </SheetTrigger>
+        <SheetContent className="flex flex-col">
+          <SheetHeader>
+            <SheetTitle className="font-headline text-2xl text-primary">
+              {showOrderStatus ? "Order Status" : "Your Order"}
+            </SheetTitle>
+          </SheetHeader>
+          <div className="flex-grow overflow-y-auto">
+            {showOrderStatus && placedOrder ? (
+              <OrderStatusView 
+                order={placedOrder} 
+                onPlaceNewOrder={handlePlaceNewOrder}
+              />
+            ) : (
+              <OrderSummary
+                items={orderItems}
+                tables={tables}
+                onUpdateQuantity={updateQuantity}
+                onClearOrder={clearOrder}
+                onOrderPlaced={handleOrderPlaced}
+                onOrderUpdated={handleOrderUpdated}
+                activeOrder={placedOrder}
+              />
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

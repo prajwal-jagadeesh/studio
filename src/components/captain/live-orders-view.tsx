@@ -119,6 +119,16 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
       });
 
       if (!response.ok) throw new Error('Failed to update status');
+
+      const updatedOrder: Order = await response.json();
+      
+      if (status === 'closed' || status === 'cancelled') {
+        await fetch(`/api/tables/${updatedOrder.tableId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'available' }),
+        });
+      }
       
       fetchAllData();
 
@@ -338,3 +348,5 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
     </>
   );
 }
+
+    

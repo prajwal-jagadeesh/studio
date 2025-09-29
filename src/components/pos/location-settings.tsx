@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, MapPin } from "lucide-react";
 
 const locationSchema = z.object({
   latitude: z.coerce.number({ invalid_type_error: 'Must be a number' }).min(-90).max(90),
@@ -35,6 +35,7 @@ type LocationFormValues = z.infer<typeof locationSchema>;
 export function LocationSettings() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingLocation, setIsFetchingLocation] = useState(false);
 
   const form = useForm<LocationFormValues>({
     resolver: zodResolver(locationSchema),
@@ -63,6 +64,40 @@ export function LocationSettings() {
     };
     fetchSettings();
   }, [form]);
+
+  const handleGetCurrentLocation = () => {
+    setIsFetchingLocation(true);
+    if (!navigator.geolocation) {
+      toast({
+        variant: "destructive",
+        title: "Geolocation Not Supported",
+        description: "Your browser does not support geolocation.",
+      });
+      setIsFetchingLocation(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        form.reset({ latitude, longitude });
+        toast({
+          title: "Location Found!",
+          description: "Coordinates have been filled in.",
+        });
+        setIsFetchingLocation(false);
+      },
+      (error) => {
+        toast({
+          variant: "destructive",
+          title: "Could Not Get Location",
+          description: error.message || "Please ensure location services are enabled.",
+        });
+        setIsFetchingLocation(false);
+      }
+    );
+  };
+
 
   const onSubmit = async (data: LocationFormValues) => {
     setIsLoading(true);
@@ -98,7 +133,7 @@ export function LocationSettings() {
       <CardHeader>
         <CardTitle>Location Settings</CardTitle>
         <CardDescription>
-          Set the restaurant's GPS coordinates to verify customer location for ordering.
+          Set the restaurant's GPS coordinates to verify customer location for ordering. You can enter them manually or use the button to get your current location.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -132,10 +167,20 @@ export function LocationSettings() {
                 )}
               />
             </div>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Save Coordinates
-            </Button>
+            <div className="flex flex-wrap gap-2">
+                <Button type="submit" disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Save Coordinates
+                </Button>
+                <Button type="button" variant="outline" onClick={handleGetCurrentLocation} disabled={isFetchingLocation}>
+                    {isFetchingLocation ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <MapPin className="mr-2 h-4 w-4" />
+                    )}
+                    Use Current Location
+                </Button>
+            </div>
           </form>
         </Form>
       </CardContent>

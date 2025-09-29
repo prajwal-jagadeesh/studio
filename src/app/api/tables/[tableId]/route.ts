@@ -28,3 +28,24 @@ export async function PATCH(
 
   return NextResponse.json(table, { status: 200 });
 }
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: { tableId: string } }
+) {
+    const tableId = params.tableId;
+    const tableIndex = tables.findIndex(t => t.id === tableId);
+
+    if (tableIndex === -1) {
+        return NextResponse.json({ message: 'Table not found' }, { status: 404 });
+    }
+
+    const table = tables[tableIndex];
+    if (table.status !== 'available') {
+        return NextResponse.json({ message: `Cannot delete a table with status "${table.status}". Please clear the table first.` }, { status: 400 });
+    }
+
+    tables.splice(tableIndex, 1);
+
+    return NextResponse.json({ message: 'Table deleted successfully' }, { status: 200 });
+}

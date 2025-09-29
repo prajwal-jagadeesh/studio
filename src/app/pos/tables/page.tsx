@@ -8,7 +8,7 @@ export default function TableManagementPage() {
           Table Management
         </h1>
         <p className="text-muted-foreground mt-1">
-          View table status and print KOTs or bills.
+          Add, delete, and view table status. Print KOTs or bills.
         </p>
       </header>
       <TableGrid />

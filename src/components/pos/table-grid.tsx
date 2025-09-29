@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -13,8 +14,33 @@ import { Button } from "../ui/button";
 import { KOTPreview } from "./kot-preview";
 import { BillPreview } from "./bill-preview";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, CheckCircle, CookingPot } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { Loader2, CookingPot, PlusCircle, MoreVertical, Trash2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+    DialogClose,
+} from "@/components/ui/dialog";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 
 const statusStyles = {
   available: {
@@ -42,10 +68,16 @@ export function TableGrid() {
   const [printType, setPrintType] = useState<"kot" | "bill" | null>(null);
   const { toast } = useToast();
 
+  const [isAddTableDialogOpen, setIsAddTableDialogOpen] = useState(false);
+  const [newTableName, setNewTableName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [tableToDelete, setTableToDelete] = useState<Table | null>(null);
+
   const kotPrintRef = useRef<HTMLDivElement>(null);
   const billPrintRef = useRef<HTMLDivElement>(null);
 
   const fetchData = async () => {
+    setIsLoading(true);
     try {
       const [tablesRes, ordersRes] = await Promise.all([
         fetch('/api/tables'),
@@ -71,9 +103,9 @@ export function TableGrid() {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 5000); // Poll for updates every 5 seconds
+    const interval = setInterval(fetchData, 5000);
     return () => clearInterval(interval);
-  }, [toast]);
+  }, []);
 
   const handleOrderStatusChange = async (orderId: string, status: Order["status"]) => {
     try {
@@ -83,7 +115,7 @@ export function TableGrid() {
         body: JSON.stringify({ status }),
       });
       if (!response.ok) throw new Error('Failed to update order status');
-      await fetchData(); // Refetch data
+      await fetchData();
     } catch (error) {
       toast({
         variant: "destructive",
@@ -113,6 +145,51 @@ export function TableGrid() {
       setPrintType(null);
     }, 50);
   };
+  
+  const handleAddTable = async () => {
+      if (!newTableName) {
+          toast({ variant: "destructive", title: "Table name is required." });
+          return;
+      }
+      setIsSubmitting(true);
+      try {
+          const response = await fetch('/api/tables', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: newTableName }),
+          });
+          if (!response.ok) throw new Error('Failed to add table');
+          toast({ title: "Success", description: "New table added successfully." });
+          setNewTableName("");
+          setIsAddTableDialogOpen(false);
+          await fetchData();
+      } catch (error) {
+          toast({ variant: "destructive", title: "Error", description: "Could not add the table." });
+      } finally {
+          setIsSubmitting(false);
+      }
+  };
+
+  const handleDeleteTable = async () => {
+      if (!tableToDelete) return;
+      setIsSubmitting(true);
+      try {
+          const response = await fetch(`/api/tables/${tableToDelete.id}`, {
+              method: 'DELETE',
+          });
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to delete table');
+          }
+          toast({ title: "Success", description: `Table "${tableToDelete.name}" deleted.` });
+          setTableToDelete(null);
+          await fetchData();
+      } catch (error: any) {
+          toast({ variant: "destructive", title: "Error", description: error.message });
+      } finally {
+          setIsSubmitting(false);
+      }
+  };
 
   if (isLoading) {
     return (
@@ -127,18 +204,17 @@ export function TableGrid() {
       <div className="printable-content">
         {orderToPrint && (
           <>
-            {printType === "kot" && (
-              <div className="print-only">
-                <KOTPreview order={orderToPrint} ref={kotPrintRef} />
-              </div>
-            )}
-            {printType === "bill" && (
-              <div className="print-only">
-                <BillPreview order={orderToPrint} ref={billPrintRef} />
-              </div>
-            )}
+            {printType === "kot" && <KOTPreview order={orderToPrint} ref={kotPrintRef} />}
+            {printType === "bill" && <BillPreview order={orderToPrint} ref={billPrintRef} />}
           </>
         )}
+      </div>
+
+      <div className="flex justify-end mb-4 non-printable">
+          <Button onClick={() => setIsAddTableDialogOpen(true)}>
+              <PlusCircle className="mr-2"/>
+              Add Table
+          </Button>
       </div>
 
       <div className="non-printable grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
@@ -151,10 +227,27 @@ export function TableGrid() {
                 statusStyles[table.status].bgColor
               } ${statusStyles[table.status].borderColor} border-2`}
             >
-              <CardHeader>
+              <CardHeader className="flex-row items-center justify-between">
                 <CardTitle className={`font-headline ${statusStyles[table.status].textColor}`}>
                   {table.name}
                 </CardTitle>
+                 <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-6 w-6">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem 
+                        disabled={table.status !== 'available'}
+                        onClick={() => setTableToDelete(table)}
+                        className="text-red-600 hover:bg-red-50 focus:bg-red-50 dark:hover:bg-red-900/20 dark:focus:bg-red-900/20"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4"/>
+                        Delete Table
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
               </CardHeader>
               <CardContent className="flex-grow">
                 <p className={`uppercase font-bold text-sm ${statusStyles[table.status].textColor}`}>
@@ -208,6 +301,51 @@ export function TableGrid() {
           )
         })}
       </div>
+      
+      {/* Add Table Dialog */}
+      <Dialog open={isAddTableDialogOpen} onOpenChange={setIsAddTableDialogOpen}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Add a New Table</DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+                <Label htmlFor="tableName">Table Name</Label>
+                <Input 
+                    id="tableName" 
+                    value={newTableName}
+                    onChange={(e) => setNewTableName(e.target.value)}
+                    placeholder="e.g., Table 7"
+                />
+            </div>
+            <DialogFooter>
+                <DialogClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                </DialogClose>
+                <Button onClick={handleAddTable} disabled={isSubmitting}>
+                    {isSubmitting ? <Loader2 className="animate-spin" /> : "Add Table"}
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Delete Table Confirmation */}
+      <AlertDialog open={!!tableToDelete} onOpenChange={() => setTableToDelete(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This will permanently delete the table "{tableToDelete?.name}". This action cannot be undone. You can only delete available tables.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteTable} disabled={isSubmitting} className="bg-red-600 hover:bg-red-700">
+                    {isSubmitting ? <Loader2 className="animate-spin" /> : "Yes, delete table"}
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
+

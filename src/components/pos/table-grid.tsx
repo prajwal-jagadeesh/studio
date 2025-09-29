@@ -81,19 +81,22 @@ export function TableGrid() {
   const billPrintRef = useRef<HTMLDivElement>(null);
   const isInitialLoad = useRef(true);
 
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const previousOrderStatuses = useRef<Map<string, string>>(new Map());
 
   // Set print width from local storage on component mount
   useEffect(() => {
-    const savedWidth = localStorage.getItem(PRINT_WIDTH_KEY) || DEFAULT_PRINT_WIDTH;
-    document.documentElement.style.setProperty('--print-width', savedWidth);
+    document.documentElement.style.setProperty('--print-width', localStorage.getItem(PRINT_WIDTH_KEY) || DEFAULT_PRINT_WIDTH);
+    // Assign audio element to ref on client
+    audioRef.current = new Audio(notificationSound);
   }, []);
 
   const playSound = () => {
-    audioRef.current?.play().catch(error => {
-      console.error("Audio play failed:", error);
-    });
+    if (audioRef.current) {
+        audioRef.current.play().catch(error => {
+          console.warn("Audio play was prevented by browser policy:", error);
+        });
+    }
   };
 
   const fetchData = async () => {
@@ -111,10 +114,9 @@ export function TableGrid() {
       const tablesData = await tablesRes.json();
       const ordersData: Order[] = await ordersRes.json();
       
-      // Check for status changes to "ready"
       if (!isInitialLoad.current) {
-        let shouldPlaySound = false;
         const newStatuses = new Map<string, string>();
+        let shouldPlaySound = false;
         ordersData.forEach(order => {
           newStatuses.set(order.id, order.status);
           const oldStatus = previousOrderStatuses.current.get(order.id);
@@ -156,6 +158,7 @@ export function TableGrid() {
 
   const handleOrderStatusChange = async (orderId: string, status: Order["status"]) => {
     try {
+      playSound(); // Play on user interaction
       const response = await fetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -176,6 +179,8 @@ export function TableGrid() {
     const order = orders.find(o => o.id === orderId);
     if (!order) return;
 
+    playSound(); // Play on user interaction
+    
     if (type === 'kot' && order.status === 'confirmed') {
       handleOrderStatusChange(order.id, 'preparing');
     }
@@ -248,7 +253,6 @@ export function TableGrid() {
 
   return (
     <>
-      <audio ref={audioRef} src={notificationSound} preload="auto"></audio>
       <div className="printable-content">
         {orderToPrint && (
           <>
@@ -396,3 +400,5 @@ export function TableGrid() {
     </>
   );
 }
+
+    

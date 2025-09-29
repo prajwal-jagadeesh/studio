@@ -74,16 +74,20 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [placedOrder, setPlacedOrder] = useState<Order | null>(null);
 
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const previousOrderIds = useRef(new Set(initialOrders.map(o => o.id)));
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const previousPendingOrderIds = useRef(new Set(initialOrders.filter(o => o.status === 'pending').map(o => o.id)));
 
 
   const { toast } = useToast();
 
   const playSound = () => {
-    audioRef.current?.play().catch(error => {
-        console.error("Audio play failed:", error);
-    });
+    if (audioRef.current) {
+        audioRef.current.play().catch(error => {
+            // Autoplay was prevented, this is a common browser policy.
+            // We can ignore this error or prompt user to enable sound.
+            console.warn("Audio play was prevented:", error);
+        });
+    }
   };
 
   const fetchAllData = async () => {
@@ -95,17 +99,18 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
         if (!ordersRes.ok || !tablesRes.ok) {
           throw new Error('Failed to fetch data');
         }
-        const ordersData = await ordersRes.json();
+        const ordersData: Order[] = await ordersRes.json();
         const tablesData = await tablesRes.json();
         
-        const newOrderIds = new Set(ordersData.map((o: Order) => o.id));
-        const hasNewOrder = ordersData.some((o: Order) => !previousOrderIds.current.has(o.id) && o.status === 'pending');
+        const currentPendingOrderIds = new Set(ordersData.filter(o => o.status === 'pending').map(o => o.id));
         
-        if (hasNewOrder && !isLoading) {
+        const hasNewPendingOrder = Array.from(currentPendingOrderIds).some(id => !previousPendingOrderIds.current.has(id));
+
+        if (hasNewPendingOrder && !isLoading) {
           playSound();
         }
 
-        previousOrderIds.current = newOrderIds;
+        previousPendingOrderIds.current = currentPendingOrderIds;
 
         setOrders(ordersData.sort((a:Order, b:Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
         setTables(tablesData);
@@ -123,6 +128,9 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
 
 
   useEffect(() => {
+    // Assign audio element to ref on client
+    audioRef.current = new Audio(notificationSound);
+
     fetchAllData();
     const interval = setInterval(fetchAllData, 5000); // Poll for new data every 5 seconds
     return () => clearInterval(interval);
@@ -131,6 +139,7 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
 
   const handleStatusChange = async (orderId: string, status: Order["status"]) => {
      try {
+      playSound(); // Play sound on user interaction
       const response = await fetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -216,7 +225,6 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
 
   return (
     <>
-      <audio ref={audioRef} src={notificationSound} preload="auto"></audio>
       <div className="flex justify-end mb-4">
         <Button onClick={() => setIsNewOrderDialogOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
@@ -368,3 +376,5 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
     </>
   );
 }
+
+    

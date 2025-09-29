@@ -55,6 +55,7 @@ const statusColors: Record<Order["status"], string> = {
   served: "bg-purple-500",
   billed: "bg-gray-500",
   closed: "bg-gray-700",
+  cancelled: "bg-red-600",
 };
 
 export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps) {
@@ -105,8 +106,8 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
         prevOrders.map(o => (o.id === updatedOrder.id ? updatedOrder : o))
       );
 
-      // If an order is closed, update the table status to 'available'
-      if (status === 'closed') {
+      // If an order is closed or cancelled, update the table status to 'available'
+      if (status === 'closed' || status === 'cancelled') {
         await updateTableStatus(updatedOrder.tableId, 'available');
       }
 
@@ -141,7 +142,7 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
     setIsDialogOpen(true);
   }
 
-  const sortedOrders = [...orders].filter(o => o.status !== 'closed').sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const sortedOrders = [...orders].filter(o => o.status !== 'closed' && o.status !== 'cancelled').sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   if (isLoading) {
     return (
@@ -205,7 +206,7 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
                        <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <DropdownMenuItem
-                              className="focus:bg-destructive/10 hover:bg-destructive/10"
+                              className="focus:bg-destructive/10 hover:bg-destructive/10 text-red-600 dark:text-red-500"
                               onSelect={(e) => e.preventDefault()}
                             >
                               Cancel Order
@@ -222,7 +223,7 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
                               <AlertDialogCancel>Go Back</AlertDialogCancel>
                               <AlertDialogAction 
                                 className="bg-red-600 hover:bg-red-700"
-                                onClick={() => handleStatusChange(order.id, "closed")}
+                                onClick={() => handleStatusChange(order.id, "cancelled")}
                               >
                                 Yes, Cancel Order
                               </AlertDialogAction>

@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Clock, ChefHat, CheckCircle, Bell, Loader2,ThumbsUp } from "lucide-react";
+import { Clock, ChefHat, CheckCircle, Bell, Loader2,ThumbsUp, Ban } from "lucide-react";
 import { Button } from "../ui/button";
 
 interface OrderStatusViewProps {
@@ -47,6 +47,7 @@ const statusInfo: Record<
   },
   billed: { text: "Billed", icon: CheckCircle, color: "bg-gray-500" },
   closed: { text: "Closed", icon: CheckCircle, color: "bg-gray-700" },
+  cancelled: { text: "Order Cancelled", icon: Ban, color: "bg-red-600" },
 };
 
 export function OrderStatusView({
@@ -61,7 +62,7 @@ export function OrderStatusView({
   }, [initialOrder]);
 
   useEffect(() => {
-    if (order.status === 'closed') {
+    if (order.status === 'closed' || order.status === 'cancelled') {
         onPlaceNewOrder();
         return;
     }

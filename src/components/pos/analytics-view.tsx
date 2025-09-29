@@ -46,6 +46,10 @@ export function AnalyticsView({ allOrders, menuItems, isLoading }: AnalyticsView
   };
 
   const filteredOrders = allOrders.filter(order => {
+    // Only include billed or closed (paid) orders in analytics.
+    if (order.status !== 'billed' && order.status !== 'closed') {
+      return false;
+    }
     const orderDate = startOfDay(new Date(order.createdAt));
     const from = range?.from ? startOfDay(range.from) : null;
     const to = range?.to ? startOfDay(range.to) : null;
@@ -200,4 +204,3 @@ export function AnalyticsView({ allOrders, menuItems, isLoading }: AnalyticsView
     </div>
   );
 }
-

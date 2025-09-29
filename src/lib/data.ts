@@ -24,7 +24,7 @@ export type Order = {
   tableName: string;
   items: OrderItem[];
   total: number;
-  status: "pending" | "confirmed" | "preparing" | "ready" | "served" | "billed" | "closed";
+  status: "pending" | "confirmed" | "preparing" | "ready" | "served" | "billed" | "closed" | "cancelled";
   createdAt: Date;
 };
 

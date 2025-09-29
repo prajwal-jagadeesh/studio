@@ -39,8 +39,8 @@ export function LocationSettings() {
   const form = useForm<LocationFormValues>({
     resolver: zodResolver(locationSchema),
     defaultValues: {
-      latitude: undefined,
-      longitude: undefined,
+      latitude: '' as any,
+      longitude: '' as any,
     },
   });
 

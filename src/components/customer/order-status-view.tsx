@@ -12,12 +12,13 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Clock, ChefHat, CheckCircle, Bell, Loader2,ThumbsUp, Ban } from "lucide-react";
+import { Clock, ChefHat, CheckCircle, Bell, Loader2,ThumbsUp, Ban, PlusCircle } from "lucide-react";
 import { Button } from "../ui/button";
 
 interface OrderStatusViewProps {
   order: Order;
   onPlaceNewOrder: () => void;
+  onAddNewItems: () => void;
 }
 
 const statusInfo: Record<
@@ -53,6 +54,7 @@ const statusInfo: Record<
 export function OrderStatusView({
   order: initialOrder,
   onPlaceNewOrder,
+  onAddNewItems,
 }: OrderStatusViewProps) {
   const [order, setOrder] = useState<Order>(initialOrder);
   const [isLoading, setIsLoading] = useState(false);
@@ -88,6 +90,9 @@ export function OrderStatusView({
 
   const currentStatus = statusInfo[order.status];
   const StatusIcon = currentStatus.icon;
+  
+  const canAddItems = order.status !== 'billed' && order.status !== 'closed' && order.status !== 'cancelled';
+
 
   return (
     <div className="pt-4 flex flex-col h-full">
@@ -121,17 +126,27 @@ export function OrderStatusView({
         </div>
         
       </div>
-      <div className="mt-auto space-y-4 pt-4">
+      <div className="mt-auto space-y-2 pt-4">
          <Separator />
          <div className="w-full flex justify-between font-bold text-lg">
             <span>Total</span>
             <span>₹{order.total.toFixed(2)}</span>
         </div>
+        {canAddItems && (
+            <Button 
+                className="w-full"
+                onClick={onAddNewItems}
+            >
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add More Items
+            </Button>
+        )}
         <Button 
             className="w-full"
             onClick={onPlaceNewOrder}
+            variant="outline"
         >
-            Place New Order
+            Place a New Order
         </Button>
       </div>
     </div>

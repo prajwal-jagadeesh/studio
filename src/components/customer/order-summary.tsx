@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ShoppingCart, Trash2, CheckCircle, Loader2 } from "lucide-react";
+import { ShoppingCart, Trash2, CheckCircle, Loader2, ArrowLeft } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +43,7 @@ interface OrderSummaryProps {
   onOrderPlaced: (order: Order) => void;
   onOrderUpdated: (order: Order) => void;
   activeOrder: Order | null;
+  onBackToStatus?: () => void;
 }
 
 export function OrderSummary({
@@ -52,7 +53,8 @@ export function OrderSummary({
   onClearOrder,
   onOrderPlaced,
   onOrderUpdated,
-  activeOrder
+  activeOrder,
+  onBackToStatus
 }: OrderSummaryProps) {
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
@@ -210,13 +212,19 @@ export function OrderSummary({
 
   return (
     <>
-      <div className="pt-4">
+      <div className="pt-4 flex flex-col h-full">
+        {onBackToStatus && (
+            <Button variant="ghost" className="justify-start px-0 mb-4" onClick={onBackToStatus}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Order Status
+            </Button>
+        )}
         {items.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">
             Your cart is empty. Add items from the menu.
           </p>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 flex-grow">
             <div className="space-y-2 mb-4 px-1">
               <Label htmlFor="table-select">Select Table</Label>
               <Select
@@ -267,25 +275,25 @@ export function OrderSummary({
             </div>
           </div>
         )}
-      </div>
-      {items.length > 0 && (
-        <div className="mt-auto pt-4 space-y-4">
-          <Separator />
-          <div className="w-full flex justify-between font-bold text-lg px-1">
-            <span>Total</span>
-            <span>₹{total.toFixed(2)}</span>
+        {items.length > 0 && (
+          <div className="mt-auto pt-4 space-y-4">
+            <Separator />
+            <div className="w-full flex justify-between font-bold text-lg px-1">
+              <span>Total</span>
+              <span>₹{total.toFixed(2)}</span>
+            </div>
+            {renderPlaceOrderButton()}
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={onClearOrder}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Clear Order
+            </Button>
           </div>
-          {renderPlaceOrderButton()}
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={onClearOrder}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Clear Order
-          </Button>
-        </div>
-      )}
+        )}
+      </div>
 
       <AlertDialog open={isSuccessOpen} onOpenChange={setIsSuccessOpen}>
         <AlertDialogContent>

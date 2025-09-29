@@ -22,6 +22,7 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
   const [placedOrder, setPlacedOrder] = useState<Order | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isAddingItems, setIsAddingItems] = useState(false);
   
   useEffect(() => {
     async function fetchMenuItems() {
@@ -82,21 +83,34 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
     setPlacedOrder(order);
     setOrderItems([]); 
     setIsCartOpen(true);
+    setIsAddingItems(false);
   };
   
   const handleOrderUpdated = (order: Order) => {
     setPlacedOrder(order);
     setOrderItems([]);
     setIsCartOpen(true);
+    setIsAddingItems(false);
   };
+
+  const handleAddNewItems = () => {
+    setIsAddingItems(true);
+    setIsCartOpen(true);
+  };
+  
+  const handleBackToStatus = () => {
+    setIsAddingItems(false);
+    setOrderItems([]);
+  }
 
   const handlePlaceNewOrder = () => {
     setPlacedOrder(null);
+    setIsAddingItems(false);
     setIsCartOpen(false);
-  };
+  }
 
   const totalItemsInCart = orderItems.reduce((acc, item) => acc + item.qty, 0);
-  const showOrderStatus = !!placedOrder;
+  const showOrderStatus = !!placedOrder && !isAddingItems;
 
 
   return (
@@ -117,12 +131,12 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
             size="icon"
           >
             <ShoppingCart className="h-8 w-8" />
-            {totalItemsInCart > 0 && !showOrderStatus && (
+            {(totalItemsInCart > 0 && !placedOrder) && (
               <Badge className="absolute -top-2 -right-2">
                 {totalItemsInCart}
               </Badge>
             )}
-            {showOrderStatus && (
+            {placedOrder && (
                  <Badge variant="destructive" className="absolute -top-2 -right-2 animate-pulse">!</Badge>
             )}
             <span className="sr-only">Open Cart</span>
@@ -131,14 +145,15 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
         <SheetContent className="flex flex-col">
           <SheetHeader>
             <SheetTitle className="font-headline text-2xl text-primary">
-              {showOrderStatus ? "Order Status" : "Your Order"}
+              {showOrderStatus ? "Order Status" : (isAddingItems ? "Add Items" : "Your Order")}
             </SheetTitle>
           </SheetHeader>
           <div className="flex-grow overflow-y-auto">
-            {showOrderStatus && placedOrder ? (
+            {showOrderStatus ? (
               <OrderStatusView 
                 order={placedOrder} 
                 onPlaceNewOrder={handlePlaceNewOrder}
+                onAddNewItems={handleAddNewItems}
               />
             ) : (
               <OrderSummary
@@ -149,6 +164,7 @@ export function MenuView({ menuItems: initialMenuItems }: MenuViewProps) {
                 onOrderPlaced={handleOrderPlaced}
                 onOrderUpdated={handleOrderUpdated}
                 activeOrder={placedOrder}
+                onBackToStatus={placedOrder ? handleBackToStatus : undefined}
               />
             )}
           </div>

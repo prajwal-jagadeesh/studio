@@ -121,6 +121,9 @@ export function OrderSummary({
         if (!response.ok) throw new Error("Failed to place order");
         
         const newOrder = await response.json();
+        const orderPlacedKey = `order_placed_${table.id}`;
+        sessionStorage.setItem(orderPlacedKey, 'true');
+
         setUpdatedOrderDetails(newOrder);
         setSuccessMessage("Order Placed Successfully!");
         setIsSuccessOpen(true);

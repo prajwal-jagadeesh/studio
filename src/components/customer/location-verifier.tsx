@@ -9,7 +9,7 @@ import {
   AlertDialogTitle,
   AlertDialogDescription,
 } from "@/components/ui/alert-dialog";
-import { Loader2, MapPin, XCircle } from "lucide-react";
+import { Loader2, MapPin, XCircle, AlertTriangle } from "lucide-react";
 import { Button } from "../ui/button";
 
 const VERIFICATION_STATUS = {
@@ -18,6 +18,7 @@ const VERIFICATION_STATUS = {
   FAILURE: 'FAILURE',
   PERMISSION_DENIED: 'PERMISSION_DENIED',
   ERROR: 'ERROR',
+  NOT_CONFIGURED: 'NOT_CONFIGURED',
 };
 
 // Haversine formula to calculate distance between two lat/lng points
@@ -47,19 +48,15 @@ export function LocationVerifier() {
         // 1. Fetch restaurant coordinates from the server
         const settingsRes = await fetch('/api/settings');
         if (!settingsRes.ok) {
-            // If settings aren't set, we can't verify. Default to success for now.
-             setStatus(VERIFICATION_STATUS.SUCCESS);
-             setTimeout(() => setIsDialogOpen(false), 1000);
-             return;
+          setStatus(VERIFICATION_STATUS.NOT_CONFIGURED);
+          return;
         }
         const settings = await settingsRes.json();
         const { latitude: restaurantLat, longitude: restaurantLng } = settings;
 
         if (!restaurantLat || !restaurantLng) {
-            // If coordinates are not set, we can't verify.
-            setStatus(VERIFICATION_STATUS.SUCCESS); // Bypass verification
-            setTimeout(() => setIsDialogOpen(false), 1000);
-            return;
+          setStatus(VERIFICATION_STATUS.NOT_CONFIGURED);
+          return;
         }
 
         // 2. Get user's location
@@ -93,9 +90,7 @@ export function LocationVerifier() {
         );
 
       } catch (error) {
-        // In case of any other error (e.g., API fetch fails), bypass verification for now
-        setStatus(VERIFICATION_STATUS.SUCCESS);
-        setTimeout(() => setIsDialogOpen(false), 1000);
+        setStatus(VERIFICATION_STATUS.ERROR);
       }
     };
 
@@ -124,6 +119,11 @@ export function LocationVerifier() {
       title = "Location Access Denied";
       description = "Please enable location services in your browser settings to continue. We need it to confirm you're at the restaurant.";
       icon = <XCircle className="h-8 w-8 text-destructive" />;
+      break;
+    case VERIFICATION_STATUS.NOT_CONFIGURED:
+      title = "Location Verification Not Set Up";
+      description = "The restaurant location has not been configured in the POS settings. Ordering is disabled until this is resolved.";
+      icon = <AlertTriangle className="h-8 w-8 text-yellow-500" />;
       break;
     case VERIFICATION_STATUS.ERROR:
     default:

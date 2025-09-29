@@ -75,9 +75,12 @@ export function TableGrid() {
 
   const kotPrintRef = useRef<HTMLDivElement>(null);
   const billPrintRef = useRef<HTMLDivElement>(null);
+  const isInitialLoad = useRef(true);
 
   const fetchData = async () => {
-    setIsLoading(true);
+    if (isInitialLoad.current) {
+        setIsLoading(true);
+    }
     try {
       const [tablesRes, ordersRes] = await Promise.all([
         fetch('/api/tables'),
@@ -97,7 +100,10 @@ export function TableGrid() {
         description: "Could not fetch table or order data.",
       });
     } finally {
-      setIsLoading(false);
+        if (isInitialLoad.current) {
+            setIsLoading(false);
+            isInitialLoad.current = false;
+        }
     }
   };
 
@@ -241,7 +247,7 @@ export function TableGrid() {
                       <DropdownMenuItem 
                         disabled={table.status !== 'available'}
                         onClick={() => setTableToDelete(table)}
-                        className="text-red-600 hover:bg-red-50 focus:bg-red-50 dark:hover:bg-red-900/20 dark:focus:bg-red-900/20"
+                        className="text-red-600 hover:bg-red-50 focus:bg-red-50 dark:text-red-500 dark:hover:bg-red-900/20 dark:focus:bg-red-900/20"
                       >
                         <Trash2 className="mr-2 h-4 w-4"/>
                         Delete Table
@@ -348,4 +354,3 @@ export function TableGrid() {
     </>
   );
 }
-

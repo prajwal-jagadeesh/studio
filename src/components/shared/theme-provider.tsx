@@ -1,21 +1,20 @@
 "use client"
 
 import * as React from "react"
+import { ThemeProvider as NextThemesProvider } from "next-themes"
+import type { ThemeProviderProps as NextThemesProviderProps } from "next-themes/dist/types"
 
-type Theme = "dark" | "light" | "system"
+import { useTheme as useNextTheme } from "next-themes"
 
 type ThemeProviderProps = {
   children: React.ReactNode
-  defaultTheme?: Theme
+  defaultTheme?: "dark" | "light" | "system"
   storageKey?: string
-  attribute?: string;
-  enableSystem?: boolean;
-  disableTransitionOnChange?: boolean;
 }
 
 type ThemeProviderState = {
-  theme: Theme
-  setTheme: (theme: Theme) => void
+  theme: "dark" | "light" | "system"
+  setTheme: (theme: "dark" | "light" | "system") => void
 }
 
 const initialState: ThemeProviderState = {
@@ -25,51 +24,31 @@ const initialState: ThemeProviderState = {
 
 const ThemeProviderContext = React.createContext<ThemeProviderState>(initialState)
 
-export function ThemeProvider({
-  children,
-  defaultTheme = "system",
-  storageKey = "vite-ui-theme",
-  ...props
-}: ThemeProviderProps) {
-  const [theme, setTheme] = React.useState<Theme>(defaultTheme);
-
-  React.useEffect(() => {
-    const storedTheme = localStorage.getItem(storageKey) as Theme | null;
-    if (storedTheme) {
-      setTheme(storedTheme);
-    }
-  }, [storageKey]);
-
-  React.useEffect(() => {
-    const root = window.document.documentElement
-
-    root.classList.remove("light", "dark")
-
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light"
-
-      root.classList.add(systemTheme)
-      return
-    }
-
-    root.classList.add(theme)
-  }, [theme])
+// This is a temporary wrapper to bridge the old context API with next-themes
+// and avoid having to refactor every component that uses useTheme.
+function ThemeProviderBridge({ children }: { children: React.ReactNode }) {
+  const { theme, setTheme } = useNextTheme()
 
   const value = {
-    theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme)
-      setTheme(theme)
-    },
+    theme: theme as "dark" | "light" | "system",
+    setTheme,
   }
 
   return (
-    <ThemeProviderContext.Provider {...props} value={value}>
+    <ThemeProviderContext.Provider value={value}>
       {children}
     </ThemeProviderContext.Provider>
+  )
+}
+
+export function ThemeProvider({
+  children,
+  ...props
+}: NextThemesProviderProps) {
+  return (
+    <NextThemesProvider {...props}>
+      <ThemeProviderBridge>{children}</ThemeProviderBridge>
+    </NextThemesProvider>
   )
 }
 

@@ -65,7 +65,10 @@ export function OrderStatusView({
 
   useEffect(() => {
     if (order.status === 'closed' || order.status === 'cancelled') {
-        onPlaceNewOrder();
+        // After 5 seconds, allow placing a new order.
+        setTimeout(() => {
+            onPlaceNewOrder();
+        }, 5000);
         return;
     }
     

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { Order, MenuItem, Table as TableType, OrderItem } from "@/lib/data";
 import {
   Table,
@@ -44,6 +44,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
 import { MenuTabs } from "../customer/menu-tabs";
 import { OrderSummary } from "../customer/order-summary";
+import { notificationSound } from "@/lib/sounds";
 
 
 interface LiveOrdersViewProps {
@@ -73,8 +74,17 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [placedOrder, setPlacedOrder] = useState<Order | null>(null);
 
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const previousOrderIds = useRef(new Set(initialOrders.map(o => o.id)));
+
 
   const { toast } = useToast();
+
+  const playSound = () => {
+    audioRef.current?.play().catch(error => {
+        console.error("Audio play failed:", error);
+    });
+  };
 
   const fetchAllData = async () => {
       try {
@@ -88,6 +98,15 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
         const ordersData = await ordersRes.json();
         const tablesData = await tablesRes.json();
         
+        const newOrderIds = new Set(ordersData.map((o: Order) => o.id));
+        const hasNewOrder = ordersData.some((o: Order) => !previousOrderIds.current.has(o.id) && o.status === 'pending');
+        
+        if (hasNewOrder && !isLoading) {
+          playSound();
+        }
+
+        previousOrderIds.current = newOrderIds;
+
         setOrders(ordersData.sort((a:Order, b:Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
         setTables(tablesData);
         
@@ -107,7 +126,7 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
     fetchAllData();
     const interval = setInterval(fetchAllData, 5000); // Poll for new data every 5 seconds
     return () => clearInterval(interval);
-  }, [toast]);
+  }, []);
 
 
   const handleStatusChange = async (orderId: string, status: Order["status"]) => {
@@ -197,6 +216,7 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
 
   return (
     <>
+      <audio ref={audioRef} src={notificationSound} preload="auto"></audio>
       <div className="flex justify-end mb-4">
         <Button onClick={() => setIsNewOrderDialogOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
@@ -348,5 +368,3 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
     </>
   );
 }
-
-    

@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { notificationSound } from "@/lib/sounds";
 
 const statusStyles = {
   available: {
@@ -80,11 +81,20 @@ export function TableGrid() {
   const billPrintRef = useRef<HTMLDivElement>(null);
   const isInitialLoad = useRef(true);
 
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const previousOrderStatuses = useRef<Map<string, string>>(new Map());
+
   // Set print width from local storage on component mount
   useEffect(() => {
     const savedWidth = localStorage.getItem(PRINT_WIDTH_KEY) || DEFAULT_PRINT_WIDTH;
     document.documentElement.style.setProperty('--print-width', savedWidth);
   }, []);
+
+  const playSound = () => {
+    audioRef.current?.play().catch(error => {
+      console.error("Audio play failed:", error);
+    });
+  };
 
   const fetchData = async () => {
     if (isInitialLoad.current) {
@@ -99,7 +109,29 @@ export function TableGrid() {
         throw new Error('Failed to fetch data');
       }
       const tablesData = await tablesRes.json();
-      const ordersData = await ordersRes.json();
+      const ordersData: Order[] = await ordersRes.json();
+      
+      // Check for status changes to "ready"
+      if (!isInitialLoad.current) {
+        let shouldPlaySound = false;
+        const newStatuses = new Map<string, string>();
+        ordersData.forEach(order => {
+          newStatuses.set(order.id, order.status);
+          const oldStatus = previousOrderStatuses.current.get(order.id);
+          if (oldStatus && oldStatus !== 'ready' && order.status === 'ready') {
+            shouldPlaySound = true;
+          }
+        });
+        if (shouldPlaySound) {
+            playSound();
+        }
+        previousOrderStatuses.current = newStatuses;
+      } else {
+        const initialStatuses = new Map<string, string>();
+        ordersData.forEach(order => initialStatuses.set(order.id, order.status));
+        previousOrderStatuses.current = initialStatuses;
+      }
+
       setTables(tablesData);
       setOrders(ordersData);
     } catch (error) {
@@ -216,6 +248,7 @@ export function TableGrid() {
 
   return (
     <>
+      <audio ref={audioRef} src={notificationSound} preload="auto"></audio>
       <div className="printable-content">
         {orderToPrint && (
           <>

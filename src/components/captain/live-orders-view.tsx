@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { Order, MenuItem, Table } from "@/lib/data";
+import type { Order, MenuItem, Table as TableType, OrderItem } from "@/lib/data";
 import {
   Table,
   TableBody,
@@ -23,6 +23,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -38,9 +39,12 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Loader2 } from "lucide-react";
+import { MoreHorizontal, Loader2, PlusCircle, X } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
+import { MenuTabs } from "../customer/menu-tabs";
+import { OrderSummary } from "../customer/order-summary";
+
 
 interface LiveOrdersViewProps {
   initialOrders: Order[];
@@ -61,32 +65,47 @@ const statusColors: Record<Order["status"], string> = {
 export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps) {
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [isNewOrderDialogOpen, setIsNewOrderDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  
+  const [tables, setTables] = useState<TableType[]>([]);
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [placedOrder, setPlacedOrder] = useState<Order | null>(null);
+
+
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchOrders = async () => {
+  const fetchAllData = async () => {
       try {
-        const response = await fetch('/api/orders');
-        if (!response.ok) {
-          throw new Error('Failed to fetch orders');
+        const [ordersRes, tablesRes] = await Promise.all([
+            fetch('/api/orders'),
+            fetch('/api/tables')
+        ]);
+        if (!ordersRes.ok || !tablesRes.ok) {
+          throw new Error('Failed to fetch data');
         }
-        const data = await response.json();
-        setOrders(data.sort((a:Order, b:Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+        const ordersData = await ordersRes.json();
+        const tablesData = await tablesRes.json();
+        
+        setOrders(ordersData.sort((a:Order, b:Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+        setTables(tablesData);
+        
       } catch (error) {
         toast({
           variant: "destructive",
           title: "Error",
-          description: "Could not fetch orders.",
+          description: "Could not fetch data.",
         });
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchOrders();
-    const interval = setInterval(fetchOrders, 5000); // Poll for new orders every 5 seconds
+
+  useEffect(() => {
+    fetchAllData();
+    const interval = setInterval(fetchAllData, 5000); // Poll for new data every 5 seconds
     return () => clearInterval(interval);
   }, [toast]);
 
@@ -100,16 +119,8 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
       });
 
       if (!response.ok) throw new Error('Failed to update status');
-
-      const updatedOrder = await response.json();
-      setOrders(prevOrders =>
-        prevOrders.map(o => (o.id === updatedOrder.id ? updatedOrder : o))
-      );
-
-      // If an order is closed or cancelled, update the table status to 'available'
-      if (status === 'closed' || status === 'cancelled') {
-        await updateTableStatus(updatedOrder.tableId, 'available');
-      }
+      
+      fetchAllData();
 
     } catch (error) {
        toast({
@@ -119,28 +130,50 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
       });
     }
   };
-
-  const updateTableStatus = async (tableId: string, status: Table["status"]) => {
-    try {
-      const response = await fetch(`/api/tables/${tableId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-      });
-      if (!response.ok) throw new Error('Failed to update table status');
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Table Update Failed",
-        description: "Could not update the table status.",
-      });
-    }
-  };
   
   const openOrderDetails = (order: Order) => {
     setSelectedOrder(order);
-    setIsDialogOpen(true);
+    setIsDetailsDialogOpen(true);
   }
+
+  // --- New Order Logic ---
+  const addToOrder = (item: MenuItem) => {
+    setOrderItems((prevItems) => {
+      const existingItem = prevItems.find((oi) => oi.menuId === item.id);
+      if (existingItem) {
+        return prevItems.map((oi) =>
+          oi.menuId === item.id ? { ...oi, qty: oi.qty + 1 } : oi
+        );
+      }
+      return [...prevItems, { menuId: item.id, name: item.name, qty: 1, price: item.price }];
+    });
+  };
+
+  const updateQuantity = (menuId: string, quantity: number) => {
+    if (quantity <= 0) {
+      setOrderItems((prevItems) => prevItems.filter((item) => item.menuId !== menuId));
+    } else {
+      setOrderItems((prevItems) =>
+        prevItems.map((item) => (item.menuId === menuId ? { ...item, qty: quantity } : item))
+      );
+    }
+  };
+
+  const clearOrder = () => setOrderItems([]);
+
+  const handleOrderPlaced = (order: Order) => {
+    setPlacedOrder(order); // We don't really need this in captain view
+    setOrderItems([]); 
+    setIsNewOrderDialogOpen(false);
+    fetchAllData(); // Refresh orders list
+  };
+
+  const handleOrderUpdated = (order: Order) => {
+    setPlacedOrder(order);
+    setOrderItems([]);
+    setIsNewOrderDialogOpen(false);
+    fetchAllData();
+  };
 
   const sortedOrders = [...orders].filter(o => o.status !== 'closed' && o.status !== 'cancelled').sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
@@ -153,7 +186,14 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
   }
 
   return (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+    <>
+      <div className="flex justify-end mb-4">
+        <Button onClick={() => setIsNewOrderDialogOpen(true)}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            New Order
+        </Button>
+      </div>
+
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
@@ -240,28 +280,61 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
         </Table>
       </div>
 
-      {selectedOrder && (
-         <DialogContent className="sm:max-w-lg">
-         <DialogHeader>
-           <DialogTitle className="font-headline text-2xl text-primary">Order {selectedOrder.id} - {selectedOrder.tableName}</DialogTitle>
-         </DialogHeader>
-         <div className="py-4">
-            <h4 className="font-semibold mb-2">Items</h4>
-            <ul>
-                {selectedOrder.items.map(item => (
-                    <li key={item.menuId} className="flex justify-between">
-                        <span>{item.name} x {item.qty}</span>
-                        <span>₹{(item.price * item.qty).toFixed(2)}</span>
-                    </li>
-                ))}
-            </ul>
-            <div className="border-t mt-2 pt-2 flex justify-between font-bold">
-                <span>Total</span>
-                <span>₹{selectedOrder.total.toFixed(2)}</span>
+    <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
+        {selectedOrder && (
+            <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+            <DialogTitle className="font-headline text-2xl text-primary">Order {selectedOrder.id} - {selectedOrder.tableName}</DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+                <h4 className="font-semibold mb-2">Items</h4>
+                <ul>
+                    {selectedOrder.items.map(item => (
+                        <li key={item.menuId} className="flex justify-between">
+                            <span>{item.name} x {item.qty}</span>
+                            <span>₹{(item.price * item.qty).toFixed(2)}</span>
+                        </li>
+                    ))}
+                </ul>
+                <div className="border-t mt-2 pt-2 flex justify-between font-bold">
+                    <span>Total</span>
+                    <span>₹{selectedOrder.total.toFixed(2)}</span>
+                </div>
             </div>
-         </div>
-       </DialogContent>
-      )}
+        </DialogContent>
+        )}
     </Dialog>
+
+    <Dialog open={isNewOrderDialogOpen} onOpenChange={setIsNewOrderDialogOpen}>
+        <DialogContent className="h-screen w-screen max-w-full flex flex-col p-0 gap-0">
+            <DialogHeader className="p-4 border-b">
+                <DialogTitle className="font-headline text-2xl text-primary">Place a New Order</DialogTitle>
+                 <DialogClose asChild>
+                    <Button variant="ghost" size="icon" className="absolute right-4 top-3">
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Close</span>
+                    </Button>
+                </DialogClose>
+            </DialogHeader>
+            <div className="flex-1 grid md:grid-cols-[2fr_1fr] overflow-hidden">
+                <div className="p-6 overflow-y-auto">
+                     <MenuTabs menuItems={menuItems.filter(item => item.available)} onAddToOrder={addToOrder} />
+                </div>
+                <div className="p-6 border-l flex flex-col bg-muted/20">
+                     <h3 className="text-xl font-headline text-primary mb-4">Order Summary</h3>
+                     <OrderSummary
+                        items={orderItems}
+                        tables={tables}
+                        onUpdateQuantity={updateQuantity}
+                        onClearOrder={clearOrder}
+                        onOrderPlaced={handleOrderPlaced}
+                        onOrderUpdated={handleOrderUpdated}
+                        activeOrder={null}
+                    />
+                </div>
+            </div>
+        </DialogContent>
+    </Dialog>
+    </>
   );
 }

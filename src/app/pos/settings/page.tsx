@@ -1,3 +1,4 @@
+
 import { PrintSettings } from "@/components/pos/print-settings";
 
 export default function SettingsPage() {
@@ -8,7 +9,7 @@ export default function SettingsPage() {
           Settings
         </h1>
         <p className="text-muted-foreground mt-1">
-          Manage application settings.
+          Manage printer and receipt customization settings.
         </p>
       </header>
       <PrintSettings />

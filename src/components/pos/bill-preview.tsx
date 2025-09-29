@@ -1,21 +1,34 @@
-import React from "react";
+
+import React, { useState, useEffect } from "react";
 import type { Order } from "@/lib/data";
 
 interface BillPreviewProps {
   order: Order;
 }
 
+const RESTAURANT_NAME_KEY = "restaurant-name-setting";
+const BILL_FOOTER_KEY = "bill-footer-setting";
+const DEFAULT_RESTAURANT_NAME = "Nikee's Zara Veg Rooftop";
+const DEFAULT_BILL_FOOTER = "Thank you for visiting!";
+
 export const BillPreview = React.forwardRef<HTMLDivElement, BillPreviewProps>(
   ({ order }, ref) => {
+    const [restaurantName, setRestaurantName] = useState(DEFAULT_RESTAURANT_NAME);
+    const [billFooter, setBillFooter] = useState(DEFAULT_BILL_FOOTER);
+    
+    useEffect(() => {
+      setRestaurantName(localStorage.getItem(RESTAURANT_NAME_KEY) || DEFAULT_RESTAURANT_NAME);
+      setBillFooter(localStorage.getItem(BILL_FOOTER_KEY) || DEFAULT_BILL_FOOTER);
+    }, []);
+
     const subtotal = order.items.reduce((acc, item) => acc + item.price * item.qty, 0);
-    // Dummy tax calculation
     const gst = subtotal * 0.05; 
     const total = subtotal + gst;
 
     return (
       <div ref={ref} className="p-4 font-code text-sm text-black bg-white">
         <div className="text-center mb-4">
-          <h2 className="text-xl font-bold font-headline">Nikee's Zara Veg Rooftop</h2>
+          <h2 className="text-xl font-bold font-headline">{restaurantName}</h2>
           <p>Tax Invoice</p>
         </div>
         <p>Order: {order.id}</p>
@@ -60,7 +73,7 @@ export const BillPreview = React.forwardRef<HTMLDivElement, BillPreviewProps>(
             <p>TOTAL: ₹{total.toFixed(2)}</p>
         </div>
         <div className="text-center mt-4">
-            <p>Thank you for visiting!</p>
+            <p>{billFooter}</p>
         </div>
       </div>
     );

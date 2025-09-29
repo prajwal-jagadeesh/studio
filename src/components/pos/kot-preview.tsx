@@ -1,12 +1,22 @@
-import React from "react";
+
+import React, { useState, useEffect } from "react";
 import type { Order } from "@/lib/data";
 
 interface KOTPreviewProps {
   order: Order;
 }
 
+const KOT_NOTES_KEY = "kot-notes-setting";
+const DEFAULT_KOT_NOTES = "";
+
 export const KOTPreview = React.forwardRef<HTMLDivElement, KOTPreviewProps>(
   ({ order }, ref) => {
+    const [kotNotes, setKotNotes] = useState(DEFAULT_KOT_NOTES);
+
+    useEffect(() => {
+        setKotNotes(localStorage.getItem(KOT_NOTES_KEY) || DEFAULT_KOT_NOTES);
+    }, []);
+
     return (
       <div ref={ref} className="p-4 font-code text-black bg-white">
         <div className="text-center">
@@ -33,6 +43,12 @@ export const KOTPreview = React.forwardRef<HTMLDivElement, KOTPreviewProps>(
           </tbody>
         </table>
         <hr className="my-2 border-dashed border-black" />
+        {kotNotes && (
+            <div className="mt-2">
+                <p className="font-bold">Notes:</p>
+                <p>{kotNotes}</p>
+            </div>
+        )}
       </div>
     );
   }

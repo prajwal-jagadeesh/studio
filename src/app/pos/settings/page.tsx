@@ -1,5 +1,6 @@
 
 import { PrintSettings } from "@/components/pos/print-settings";
+import { LocationSettings } from "@/components/pos/location-settings";
 
 export default function SettingsPage() {
   return (
@@ -9,10 +10,13 @@ export default function SettingsPage() {
           Settings
         </h1>
         <p className="text-muted-foreground mt-1">
-          Manage printer and receipt customization settings.
+          Manage restaurant, printer, and receipt customization settings.
         </p>
       </header>
-      <PrintSettings />
+      <div className="space-y-6">
+        <LocationSettings />
+        <PrintSettings />
+      </div>
     </div>
   );
 }

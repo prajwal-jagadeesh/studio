@@ -160,9 +160,9 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
             <TableRow>
               <TableHead>Order ID</TableHead>
               <TableHead>Table</TableHead>
-              <TableHead>Total</TableHead>
+              <TableHead className="hidden sm:table-cell">Total</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Created</TableHead>
+              <TableHead className="hidden md:table-cell">Created</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -171,14 +171,14 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
               <TableRow key={order.id}>
                 <TableCell className="font-medium">{order.id}</TableCell>
                 <TableCell>{order.tableName}</TableCell>
-                <TableCell>₹{order.total.toFixed(2)}</TableCell>
+                <TableCell className="hidden sm:table-cell">₹{order.total.toFixed(2)}</TableCell>
                 <TableCell>
                   <Badge variant="secondary" className="text-white capitalize" style={{ backgroundColor: `hsl(${statusColors[order.status].replace('bg-', '')})` }}>
                      <span className={`inline-block w-2 h-2 mr-2 rounded-full ${statusColors[order.status]}`}></span>
                     {order.status}
                   </Badge>
                 </TableCell>
-                <TableCell>{formatDistanceToNow(new Date(order.createdAt), { addSuffix: true })}</TableCell>
+                <TableCell className="hidden md:table-cell">{formatDistanceToNow(new Date(order.createdAt), { addSuffix: true })}</TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -206,7 +206,7 @@ export function LiveOrdersView({ initialOrders, menuItems }: LiveOrdersViewProps
                        <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <DropdownMenuItem
-                              className="focus:bg-destructive/10 hover:bg-destructive/10 text-red-600 dark:text-red-500"
+                              className="focus:bg-destructive/10 text-red-600 dark:text-red-500"
                               onSelect={(e) => e.preventDefault()}
                             >
                               Cancel Order

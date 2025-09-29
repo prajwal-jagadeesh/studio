@@ -259,7 +259,7 @@ export function OrderSummary({
                     onChange={(e) =>
                       onUpdateQuantity(item.menuId, parseInt(e.target.value))
                     }
-                    className="w-16 h-8 text-center"
+                    className="w-14 h-8 sm:w-16 text-center"
                     min="0"
                   />
                 </div>
@@ -306,4 +306,3 @@ export function OrderSummary({
     </>
   );
 }
-

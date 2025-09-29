@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -217,7 +218,7 @@ export function MenuManagementView({ initialItems }: MenuManagementViewProps) {
                         <TableRow>
                         <TableHead>Name</TableHead>
                         <TableHead>Price</TableHead>
-                        <TableHead>Status</TableHead>
+                        <TableHead className="hidden sm:table-cell">Status</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -226,7 +227,7 @@ export function MenuManagementView({ initialItems }: MenuManagementViewProps) {
                         <TableRow key={item.id}>
                             <TableCell className="font-medium">{item.name}</TableCell>
                             <TableCell>₹{item.price.toFixed(2)}</TableCell>
-                            <TableCell>
+                            <TableCell className="hidden sm:table-cell">
                                 <div className="flex items-center space-x-2">
                                     {updatingItems.includes(item.id) ? (
                                         <Loader2 className="h-4 w-4 animate-spin" />

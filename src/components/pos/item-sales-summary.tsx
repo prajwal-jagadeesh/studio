@@ -55,7 +55,7 @@ export function ItemSalesSummary({ orders, menuItems }: ItemSalesSummaryProps) {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Item Name</TableHead>
-                                <TableHead>Category</TableHead>
+                                <TableHead className="hidden sm:table-cell">Category</TableHead>
                                 <TableHead className="text-right">Quantity Sold</TableHead>
                                 <TableHead className="text-right">Total Revenue</TableHead>
                             </TableRow>
@@ -64,7 +64,7 @@ export function ItemSalesSummary({ orders, menuItems }: ItemSalesSummaryProps) {
                             {sortedSummary.length > 0 ? sortedSummary.map(item => (
                                 <TableRow key={item.id}>
                                     <TableCell className="font-medium">{item.name}</TableCell>
-                                    <TableCell>{item.category}</TableCell>
+                                    <TableCell className="hidden sm:table-cell">{item.category}</TableCell>
                                     <TableCell className="text-right">{item.qtySold}</TableCell>
                                     <TableCell className="text-right">₹{item.revenue.toFixed(2)}</TableCell>
                                 </TableRow>

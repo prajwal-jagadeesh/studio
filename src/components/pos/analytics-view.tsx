@@ -23,7 +23,6 @@ import { ItemSalesSummary } from "./item-sales-summary";
 interface AnalyticsViewProps {
   allOrders: Order[];
   menuItems: MenuItem[];
-  isLoading: boolean;
 }
 
 type DailyData = {
@@ -32,7 +31,7 @@ type DailyData = {
   revenue: number;
 };
 
-export function AnalyticsView({ allOrders, menuItems, isLoading }: AnalyticsViewProps) {
+export function AnalyticsView({ allOrders, menuItems }: AnalyticsViewProps) {
   const [range, setRange] = useState<DateRange | undefined>({
     from: addDays(new Date(), -6),
     to: new Date(),
@@ -86,14 +85,6 @@ export function AnalyticsView({ allOrders, menuItems, isLoading }: AnalyticsView
   }, {} as Record<string, DailyData>);
 
   const sortedChartData = Object.values(chartData).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-  if (isLoading) {
-    return (
-        <div className="flex justify-center items-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-    );
-  }
 
   return (
     <div className="space-y-6">

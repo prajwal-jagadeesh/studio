@@ -1,33 +1,16 @@
 
-"use client";
-
-import { useState, useEffect } from "react";
 import { AnalyticsView } from "@/components/pos/analytics-view";
 import { orders as allOrders, menuItems } from "@/lib/data";
 import type { Order, MenuItem } from "@/lib/data";
 
-export default function AnalyticsPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+async function getOrders(): Promise<Order[]> {
+    // In a real app, this would be a database call.
+    // For now, we simulate an API call to our in-memory data.
+    return Promise.resolve(allOrders);
+}
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch('/api/orders');
-        if (!response.ok) {
-          throw new Error('Failed to fetch orders');
-        }
-        const data = await response.json();
-        setOrders(data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchOrders();
-  }, []);
+export default async function AnalyticsPage() {
+  const orders = await getOrders();
   
   return (
      <div>
@@ -39,7 +22,8 @@ export default function AnalyticsPage() {
           Review your restaurant's performance metrics.
         </p>
       </header>
-      <AnalyticsView allOrders={orders} menuItems={menuItems} isLoading={isLoading} />
+      {/* Pass server-fetched data directly to the client component */}
+      <AnalyticsView allOrders={orders} menuItems={menuItems} />
     </div>
   );
 }
